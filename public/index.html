@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestoría Virtual - Solicitud</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="top-bar">
+    <div class="logo">Gestoría Virtual</div>
+    <button id="btnAdmin" class="btn-secondary">Acceso operadores</button>
+  </header>
+
+  <main class="page">
+    <section class="card">
+      <h1>Solicitud de trámite</h1>
+      <p class="subtitle">
+        Completa tus datos y adjunta la información requerida. Al final se abrirá WhatsApp con el mensaje listo para enviar.
+      </p>
+
+      <form id="solicitudForm" class="form">
+        <div class="field-group">
+          <label for="nombre">Nombre completo *</label>
+          <input id="nombre" type="text" required />
+        </div>
+
+        <div class="field-group">
+          <label for="curp">CURP *</label>
+          <input id="curp" type="text" required />
+        </div>
+
+        <div class="field-group">
+          <label for="telefono">Teléfono (WhatsApp) *</label>
+          <input id="telefono" type="tel" required />
+        </div>
+
+        <div class="field-group">
+          <label for="email">Correo electrónico (opcional)</label>
+          <input id="email" type="email" />
+        </div>
+
+        <div class="field-group">
+          <label for="comentarios">Comentarios adicionales (opcional)</label>
+          <textarea id="comentarios" rows="3"></textarea>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- FOTO PERSONA -->
+        <section class="section-block">
+          <h2>1. Foto de la persona</h2>
+          <p class="help">
+            Sube una foto de frente, con buena luz. El sistema quitará el fondo y aumentará el brillo automáticamente.
+          </p>
+
+          <input
+            type="file"
+            id="fotoPersonaInput"
+            accept="image/*"
+            capture="environment"
+          />
+
+          <div id="fotoPersonaPreview" class="image-preview empty">
+            <span class="placeholder">Aún no hay foto</span>
+          </div>
+
+          <div id="fotoPersonaActions" class="preview-actions" style="display:none;">
+            <button type="button" id="btnPersonaUsar" class="btn-primary small">
+              Usar esta foto
+            </button>
+            <button type="button" id="btnPersonaCambiar" class="btn-secondary small">
+              Cambiar foto
+            </button>
+          </div>
+        </section>
+
+        <hr class="divider" />
+
+        <!-- FOTO IDENTIFICACIÓN -->
+        <section class="section-block">
+          <h2>2. Foto de identificación</h2>
+          <p class="help">
+            Sube una foto clara de tu documento de identificación (frente).
+          </p>
+
+          <input
+            type="file"
+            id="fotoIdInput"
+            accept="image/*"
+            capture="environment"
+          />
+
+          <div id="fotoIdPreview" class="image-preview empty">
+            <span class="placeholder">Aún no hay foto</span>
+          </div>
+
+          <div id="fotoIdActions" class="preview-actions" style="display:none;">
+            <button type="button" id="btnIdUsar" class="btn-primary small">
+              Usar esta foto
+            </button>
+            <button type="button" id="btnIdCambiar" class="btn-secondary small">
+              Cambiar foto
+            </button>
+          </div>
+        </section>
+
+        <hr class="divider" />
+
+        <!-- FIRMA -->
+        <section class="section-block">
+          <h2>3. Firma</h2>
+          <p class="help">
+            Puedes subir una foto de tu firma o dibujarla directamente en la pantalla.
+          </p>
+
+          <div class="tabs">
+            <button type="button" id="tabFirmaSubir" class="tab-button active">
+              Subir imagen
+            </button>
+            <button type="button" id="tabFirmaDibujar" class="tab-button">
+              Dibujar firma
+            </button>
+          </div>
+
+          <!-- Subir firma -->
+          <div id="firmaSubirPanel" class="firma-panel">
+            <input type="file" id="fotoFirmaInput" accept="image/*" />
+          </div>
+
+          <!-- Dibujar firma -->
+          <div id="firmaDibujarPanel" class="firma-panel" style="display:none;">
+            <div class="signature-wrapper">
+              <canvas id="signaturePad"></canvas>
+            </div>
+            <div class="preview-actions">
+              <button type="button" id="btnLimpiarFirma" class="btn-secondary small">
+                Limpiar
+              </button>
+              <button type="button" id="btnConfirmarFirmaCanvas" class="btn-primary small">
+                Confirmar firma
+              </button>
+            </div>
+          </div>
+
+          <div id="firmaPreview" class="image-preview empty">
+            <span class="placeholder">Aún no hay firma</span>
+          </div>
+
+          <div id="firmaActions" class="preview-actions" style="display:none;">
+            <button type="button" id="btnFirmaCambiar" class="btn-secondary small">
+              Cambiar firma
+            </button>
+          </div>
+        </section>
+
+        <!-- Campos ocultos (urls de imágenes) -->
+        <input type="hidden" id="personaPhotoUrl" />
+        <input type="hidden" id="idPhotoUrl" />
+        <input type="hidden" id="firmaUrl" />
+
+        <div class="form-footer">
+          <button type="submit" class="btn-primary full">
+            Enviar por WhatsApp
+          </button>
+          <p class="small-note">
+            Al continuar se abrirá WhatsApp con toda la información lista para enviar al número
+            <strong>722 560 0905</strong>.
+          </p>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <div id="globalLoader" class="global-loader" style="display:none;">
+    <div class="loader"></div>
+    <span>Procesando imagen, por favor espera...</span>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

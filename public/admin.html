@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel de formularios - Gestoría Virtual</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="top-bar">
+    <div class="logo">Panel Gestoría Virtual</div>
+    <button id="btnLogout" class="btn-secondary">Cerrar sesión</button>
+  </header>
+
+  <main class="page">
+    <section class="card">
+      <h1>Formularios recibidos</h1>
+      <p class="subtitle">
+        Lista en orden del más reciente al más antiguo. Haz clic en las miniaturas para ver la imagen completa.
+      </p>
+
+      <div id="adminError" class="error-message" style="display:none;"></div>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>CURP</th>
+              <th>Fotos</th>
+              <th>Comentarios</th>
+            </tr>
+          </thead>
+          <tbody id="formsBody">
+            <!-- filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Acceso operadores - Gestoría Virtual</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="page center">
+    <section class="card card-small">
+      <h1>Acceso operadores</h1>
+      <p class="subtitle">
+        Inicia sesión para ver el panel de formularios.
+      </p>
+
+      <form id="loginForm" class="form">
+        <div class="field-group">
+          <label for="username">Usuario</label>
+          <input id="username" type="text" required />
+        </div>
+        <div class="field-group">
+          <label for="password">Contraseña</label>
+          <input id="password" type="password" required />
+        </div>
+
+        <div id="loginError" class="error-message" style="display:none;"></div>
+
+        <button type="submit" class="btn-primary full">Entrar</button>
+        <button type="button" id="btnVolverForm" class="btn-secondary full">
+          Volver al formulario
+        </button>
+      </form>
+    </section>
+  </main>
+
+  <script src="/login.js"></script>
+</body>
+</html>
