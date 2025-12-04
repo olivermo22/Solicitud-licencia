@@ -96,23 +96,31 @@ function requireAuth(req, res, next) {
 // 1) Quita fondo con @imgly/background-removal-node
 // 2) Aumenta brillo 20% con Jimp
 // 3) Guarda como PNG en /uploads y devuelve la URL pública
+import { pipeline } from "@xenova/transformers"; // si usas require, dime y te lo convierto a CJS
+
 async function processPersonaImage(inputPath) {
-  const blob = await removeBackground(inputPath);
-  const buffer = Buffer.from(await blob.arrayBuffer());
-  const image = await Jimp.read(buffer);
+  // 1. Cargar modelo de quitar fondo
+  const removeBg = await pipeline("image-segmentation", "Xenova/u2net");
 
-  // +20% brillo (rango -1 a +1)
-  image.brightness(0.2);
+  // 2. Ejecutar modelo
+  const result = await removeBg(inputPath);
 
-  const filename = `persona-${Date.now()}.png`;
-  const outputPath = path.join(UPLOADS_DIR, filename);
-  await image.writeAsync(outputPath);
+  // 3. Convertir a PNG y fondo transparente
+  const outputFile = `persona-${Date.now()}.png`;
+  const outputPath = path.join(UPLOADS_DIR, outputFile);
 
-  // borrar archivo original subido
-  fs.unlink(inputPath, () => {});
+  const jimpImage = await Jimp.read(result);
 
-  return `/uploads/${filename}`;
+  // aumentar brillo +20%
+  jimpImage.brightness(0.2);
+
+  await jimpImage.writeAsync(outputPath);
+
+  fs.unlink(inputPath, () => {}); // borrar original
+
+  return `/uploads/${outputFile}`;
 }
+
 
 // Normaliza imagen (ID o firma) a PNG y guarda
 async function normalizeImage(inputPath, prefix) {
