@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import multer from "multer";
 import session from "express-session";
+import { removeBackground } from "@imgly/background-removal";
 import * as Jimp from "jimp";
 import { pipeline } from "@xenova/transformers";
 import { fileURLToPath } from "url";
@@ -80,20 +81,36 @@ function saveForms(forms) {
 //   QUITAR FONDO CON U2NET
 // =========================
 async function processPersonaImage(inputPath) {
-    const removeBg = await pipeline("image-segmentation", "Xenova/u2net");
+    try {
+        // 1. Cargar imagen original como buffer
+        const inputBuffer = fs.readFileSync(inputPath);
 
-    const result = await removeBg(inputPath);
+        // 2. Quitar fondo (WASM, super estable)
+        const bgRemoved = await removeBackground(inputBuffer, {
+            debug: false,
+            proxy: null,
+        });
 
-    const outputName = `persona-${Date.now()}.png`;
-    const outputPath = path.join(UPLOADS_DIR, outputName);
+        // 3. Convertir a Jimp para brillo
+        const img = await Jimp.read(bgRemoved);
 
-    const img = await Jimp.read(result);
-    img.brightness(0.2);
+        // 4. Aumentar brillo 20%
+        img.brightness(0.20);
 
-    await img.writeAsync(outputPath);
-    fs.unlink(inputPath, () => {});
+        // 5. Guardar resultado
+        const filename = `persona-${Date.now()}.png`;
+        const outputPath = path.join(UPLOADS_DIR, filename);
 
-    return `/uploads/${outputName}`;
+        await img.writeAsync(outputPath);
+
+        // 6. Eliminar archivo original
+        fs.unlinkSync(inputPath);
+
+        return `/uploads/${filename}`;
+    } catch (err) {
+        console.error("Error en processPersonaImage:", err);
+        throw err;
+    }
 }
 
 // Normalizar imágenes ID/firma
