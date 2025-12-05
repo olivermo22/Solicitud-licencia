@@ -3,7 +3,6 @@ import path from "path";
 import fs from "fs";
 import multer from "multer";
 import session from "express-session";
-import { removeBackground } from "@imgly/background-removal";
 import * as Jimp from "jimp";
 import { pipeline } from "@xenova/transformers";
 import { fileURLToPath } from "url";
@@ -80,38 +79,7 @@ function saveForms(forms) {
 // =========================
 //   QUITAR FONDO CON U2NET
 // =========================
-async function processPersonaImage(inputPath) {
-    try {
-        // 1. Cargar imagen original como buffer
-        const inputBuffer = fs.readFileSync(inputPath);
 
-        // 2. Quitar fondo (WASM, super estable)
-        const bgRemoved = await removeBackground(inputBuffer, {
-            debug: false,
-            proxy: null,
-        });
-
-        // 3. Convertir a Jimp para brillo
-        const img = await Jimp.read(bgRemoved);
-
-        // 4. Aumentar brillo 20%
-        img.brightness(0.20);
-
-        // 5. Guardar resultado
-        const filename = `persona-${Date.now()}.png`;
-        const outputPath = path.join(UPLOADS_DIR, filename);
-
-        await img.writeAsync(outputPath);
-
-        // 6. Eliminar archivo original
-        fs.unlinkSync(inputPath);
-
-        return `/uploads/${filename}`;
-    } catch (err) {
-        console.error("Error en processPersonaImage:", err);
-        throw err;
-    }
-}
 
 // Normalizar imágenes ID/firma
 async function normalizeImage(inputPath, prefix) {
@@ -155,24 +123,48 @@ app.post("/api/logout", (req, res) => {
 // =========================
 
 app.post("/api/upload/image", upload.single("image"), async (req, res) => {
-    try {
-        if (!req.file) return res.status(400).json({ error: "No se recibió archivo" });
+  try {
+    if (!req.file) return res.status(400).json({ error: "No se recibió archivo" });
 
-        const type = req.query.type || "generic";
-        let url;
+    const type = req.query.type || "generic";
+    const ext = path.extname(req.file.originalname).toLowerCase() || ".jpg";
 
-        if (type === "persona") url = await processPersonaImage(req.file.path);
-        else if (type === "identificacion") url = await normalizeImage(req.file.path, "id");
-        else if (type === "firma") url = await normalizeImage(req.file.path, "firma");
-        else url = await normalizeImage(req.file.path, "img");
+    // FOTO PERSONA — ya no procesamos nada, solo guardamos
+    if (type === "persona") {
+      const filename = `persona-${Date.now()}${ext}`;
+      const outputPath = path.join(UPLOADS_DIR, filename);
+      fs.renameSync(req.file.path, outputPath);
+      return res.json({ url: `/uploads/${filename}` });
+    } 
 
-        res.json({ url });
-
-    } catch (e) {
-        console.error("Error procesando imagen:", e);
-        res.status(500).json({ error: "Error procesando imagen" });
+    // FOTO IDENTIFICACIÓN
+    if (type === "identificacion") {
+      const filename = `id-${Date.now()}${ext}`;
+      const outputPath = path.join(UPLOADS_DIR, filename);
+      fs.renameSync(req.file.path, outputPath);
+      return res.json({ url: `/uploads/${filename}` });
     }
+
+    // FIRMA
+    if (type === "firma") {
+      const filename = `firma-${Date.now()}${ext}`;
+      const outputPath = path.join(UPLOADS_DIR, filename);
+      fs.renameSync(req.file.path, outputPath);
+      return res.json({ url: `/uploads/${filename}` });
+    }
+
+    // CUALQUIER OTRO TIPO
+    const filename = `img-${Date.now()}${ext}`;
+    const outputPath = path.join(UPLOADS_DIR, filename);
+    fs.renameSync(req.file.path, outputPath);
+    return res.json({ url: `/uploads/${filename}` });
+
+  } catch (err) {
+    console.error("Error subiendo imagen:", err);
+    return res.status(500).json({ error: "Error subiendo imagen" });
+  }
 });
+
 
 // =========================
 //      FORMULARIOS
