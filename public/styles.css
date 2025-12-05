@@ -387,8 +387,42 @@ button {
   gap: 10px;
 }
 
+/* ============================ */
+/* TABLA ADMIN */
+/* ============================ */
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+}
+
+.data-table thead {
+  background: #f3f4f6;
+}
+
+/* Miniaturas en admin */
+
+.thumb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .admin-thumb {
-  width: 90px;     /* tamaño perfecto para tabla */
+  width: 90px;
   height: 60px;
   object-fit: cover;
   border-radius: 6px;
@@ -399,4 +433,14 @@ button {
 .admin-thumb:hover {
   transform: scale(1.05);
   transition: 0.2s ease-in-out;
+}
+
+/* ============================ */
+/* MENSAJES DE ERROR LOGIN/ADMIN */
+/* ============================ */
+
+.error-message {
+  margin-top: 8px;
+  color: var(--danger);
+  font-size: 0.8rem;
 }

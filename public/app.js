@@ -61,6 +61,7 @@ const inputFirmaUrl = document.getElementById("firmaUrl");
 // Cámara (modal)
 const cameraModal = document.getElementById("cameraModal");
 const cameraVideo = document.getElementById("cameraVideo");
+const cameraSilhouette = document.getElementById("cameraSilhouette");
 const takePhotoBtn = document.getElementById("takePhotoBtn");
 const closeCameraBtn = document.getElementById("closeCameraBtn");
 
@@ -123,15 +124,28 @@ function resetPreview(container, placeholderText) {
 // ===============================
 // CÁMARA (MODAL)
 // ===============================
-async function openCamera(callback) {
+async function openCamera(
+  callback,
+  options = { silhouette: true, rearCamera: false }
+) {
   cameraCallback = callback;
+
+  // Mostrar / ocultar silueta según origen
+  if (cameraSilhouette) {
+    cameraSilhouette.style.display = options.silhouette ? "block" : "none";
+  }
+
   cameraModal.style.display = "flex";
 
   try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user" },
+    const constraints = {
+      video: {
+        facingMode: options.rearCamera ? { ideal: "environment" } : "user",
+      },
       audio: false,
-    });
+    };
+
+    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
     cameraVideo.srcObject = cameraStream;
   } catch (err) {
     console.error("Error accediendo a la cámara:", err);
@@ -151,31 +165,28 @@ function closeCamera() {
 
 if (takePhotoBtn) {
   takePhotoBtn.addEventListener("click", async () => {
-  const canvas = document.createElement("canvas");
-  canvas.width = cameraVideo.videoWidth;
-  canvas.height = cameraVideo.videoHeight;
+    const canvas = document.createElement("canvas");
+    canvas.width = cameraVideo.videoWidth;
+    canvas.height = cameraVideo.videoHeight;
 
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
 
-  // Convertir a blob usando Promise
-  const blob = await new Promise((resolve) =>
-    canvas.toBlob(resolve, "image/jpeg", 0.95)
-  );
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.95)
+    );
 
-  if (!blob) {
-    alert("No se pudo obtener la foto, intenta nuevamente.");
-    return;
-  }
+    if (!blob) {
+      alert("No se pudo obtener la foto, intenta nuevamente.");
+      return;
+    }
 
-  // Enviar la foto a quien la solicitó
-  if (cameraCallback) {
-    await cameraCallback(blob);
-  }
+    if (cameraCallback) {
+      await cameraCallback(blob);
+    }
 
-  closeCamera();
-});
-
+    closeCamera();
+  });
 }
 
 if (closeCameraBtn) {
@@ -224,9 +235,13 @@ if (btnPersonaFile && fotoPersonaInput) {
 
 if (btnPersonaCamera) {
   btnPersonaCamera.addEventListener("click", () => {
-    openCamera(async (blob) => {
-      await handlePersonaImage(blob);
-    });
+    // Persona: cámara frontal + silueta
+    openCamera(
+      async (blob) => {
+        await handlePersonaImage(blob);
+      },
+      { silhouette: true, rearCamera: false }
+    );
   });
 }
 
@@ -283,9 +298,13 @@ if (btnIdFile && fotoIdInput) {
 
 if (btnIdCamera) {
   btnIdCamera.addEventListener("click", () => {
-    openCamera(async (blob) => {
-      await handleIdImage(blob);
-    });
+    // Identificación: cámara trasera + SIN silueta
+    openCamera(
+      async (blob) => {
+        await handleIdImage(blob);
+      },
+      { silhouette: false, rearCamera: true }
+    );
   });
 }
 
@@ -576,7 +595,9 @@ if (form) {
       window.location.href = waUrl;
     } catch (err) {
       console.error(err);
-      alert("Ocurrió un error al guardar o enviar la solicitud. Intenta de nuevo.");
+      alert(
+        "Ocurrió un error al guardar o enviar la solicitud. Intenta de nuevo."
+      );
     } finally {
       showGlobalLoader(false);
     }

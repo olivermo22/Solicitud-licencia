@@ -46,7 +46,7 @@ function formatDate(ts) {
     month: "2-digit",
     year: "2-digit",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   });
 }
 
@@ -99,6 +99,7 @@ function renderForms(forms) {
       const img = document.createElement("img");
       img.src = baseUrl + f.personaPhotoUrl;
       img.title = "Foto persona";
+      img.className = "admin-thumb";
       img.onclick = () => window.open(img.src, "_blank");
       wrapper.appendChild(img);
     }
@@ -107,6 +108,7 @@ function renderForms(forms) {
       const img = document.createElement("img");
       img.src = baseUrl + f.idPhotoUrl;
       img.title = "Identificación";
+      img.className = "admin-thumb";
       img.onclick = () => window.open(img.src, "_blank");
       wrapper.appendChild(img);
     }
@@ -115,6 +117,7 @@ function renderForms(forms) {
       const img = document.createElement("img");
       img.src = baseUrl + f.firmaUrl;
       img.title = "Firma";
+      img.className = "admin-thumb";
       img.onclick = () => window.open(img.src, "_blank");
       wrapper.appendChild(img);
     }
