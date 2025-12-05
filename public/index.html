@@ -42,11 +42,6 @@
         </div>
 
         <div class="field-group">
-          <label for="email">Correo electrónico (opcional)</label>
-          <input id="email" type="email" />
-        </div>
-
-        <div class="field-group">
           <label for="tipoLicencia">Tipo de licencia *</label>
           <select id="tipoLicencia" required>
             <option value="">Selecciona una opción</option>
@@ -67,6 +62,10 @@
 
         <div class="field-group">
           <label>¿Aceptas que la licencia lleve domicilio del estado de Guerrero? *</label>
+          <p class="help">
+            Como la licencia se tramita en Guerrero, se pide que salga con un domicilio de aquí.
+            En caso de no tener domicilio de Guerrero, la licencia saldrá con el domicilio del ayuntamiento donde se realiza el trámite.
+          </p>
           <label class="inline-checkbox">
             <input type="checkbox" id="domicilioGuerrero" />
             <span>Sí, confirmo que acepto que la licencia lleve domicilio del estado de Guerrero.</span>
@@ -102,11 +101,6 @@
         <div class="field-group">
           <label for="emergenciaTelefono">Teléfono contacto de emergencia *</label>
           <input id="emergenciaTelefono" type="tel" required />
-        </div>
-
-        <div class="field-group">
-          <label for="comentarios">Comentarios adicionales (opcional)</label>
-          <textarea id="comentarios" rows="3"></textarea>
         </div>
 
         <hr class="divider" />
@@ -262,7 +256,9 @@
 
         <div class="form-footer">
           <button type="submit" class="btn-primary full">Enviar por WhatsApp</button>
-          <p class="small-note">Se abrirá WhatsApp con el mensaje listo.</p>
+          <p class="small-note">
+            PRESIONA EN "ENVIAR POR WHATSAPP", TU SOLICITUD SERÁ ASIGNADA AL NUM: 722 560 09 05 DONDE CONTINUARÁS TU TRÁMITE CON ATENCIÓN PERSONALIZADA.
+          </p>
         </div>
       </form>
     </section>

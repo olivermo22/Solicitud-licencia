@@ -14,7 +14,6 @@ const inputNombre = document.getElementById("nombre");
 const inputApellidos = document.getElementById("apellidos");
 const inputCurp = document.getElementById("curp");
 const inputTelefono = document.getElementById("telefono");
-const inputEmail = document.getElementById("email");
 const inputTipoLicencia = document.getElementById("tipoLicencia");
 const inputVigencia = document.getElementById("vigencia");
 const inputDomicilioGuerrero = document.getElementById("domicilioGuerrero");
@@ -22,7 +21,6 @@ const inputAlergias = document.getElementById("alergias");
 const inputTipoSangre = document.getElementById("tipoSangre");
 const inputEmergenciaNombre = document.getElementById("emergenciaNombre");
 const inputEmergenciaTelefono = document.getElementById("emergenciaTelefono");
-const inputComentarios = document.getElementById("comentarios");
 
 // Datos de envío
 const inputEnvioNombreDestinatario = document.getElementById("envioNombreDestinatario");
@@ -539,7 +537,6 @@ if (form) {
     const apellidos = inputApellidos.value.trim();
     const curp = inputCurp.value.trim();
     const telefono = inputTelefono.value.trim();
-    const email = inputEmail.value.trim();
     const tipoLicencia = inputTipoLicencia.value;
     const vigencia = inputVigencia.value;
     const domicilioAceptado = inputDomicilioGuerrero.checked;
@@ -547,7 +544,6 @@ if (form) {
     const tipoSangre = inputTipoSangre.value;
     const emergenciaNombre = inputEmergenciaNombre.value.trim();
     const emergenciaTelefono = inputEmergenciaTelefono.value.trim();
-    const comentarios = inputComentarios.value.trim();
 
     const envioNombreDestinatario = inputEnvioNombreDestinatario.value.trim();
     const envioTelefonoDestinatario = inputEnvioTelefonoDestinatario.value.trim();
@@ -618,7 +614,6 @@ if (form) {
       apellidos,
       curp,
       telefono,
-      email,
       tipoLicencia,
       vigencia,
       domicilioAceptado,
@@ -626,7 +621,6 @@ if (form) {
       tipoSangre,
       emergenciaNombre,
       emergenciaTelefono,
-      comentarios,
       envioNombreDestinatario,
       envioTelefonoDestinatario,
       envioCalle,
@@ -671,6 +665,7 @@ if (form) {
       const vigenciaTexto = vigenciaMap[vigencia] || vigencia;
       const domicilioTexto = domicilioAceptado ? "SI" : "NO";
       const nombreCompleto = `${nombre} ${apellidos}`.trim();
+      const baseUrl = window.location.origin;
 
       const lineas = [
         "SOLICITUD LICENCIA DE CONDUCIR",
@@ -695,7 +690,11 @@ if (form) {
         `CP : ${envioCP}`,
         `CIUDAD Y ESTADO : ${envioCiudadEstado}`,
         "",
-        "Tu solicitud será asignada al número 7225600905 para continuar el trámite.",
+        `FOTO PERSONA : ${baseUrl}${personaUrl}`,
+        `FOTO IDENTIFICACION : ${baseUrl}${idUrl}`,
+        `FIRMA : ${baseUrl}${firmaUrl}`,
+        "",
+        `PRESIONA EN "ENVIAR POR WHATSAPP", TU SOLICITUD SERÁ ASIGNADA AL NUM: 722 560 09 05 DONDE CONTINUARÁS TU TRÁMITE CON ATENCIÓN PERSONALIZADA.`,
       ];
 
       const text = encodeURIComponent(lineas.join("\n"));
