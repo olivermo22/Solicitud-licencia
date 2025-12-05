@@ -1,63 +1,184 @@
-/* ============================= */
-/* BASE GENERAL */
-/* ============================= */
+:root {
+  --bg: #f5f7fb;
+  --card-bg: #ffffff;
+  --primary: #2563eb;
+  --primary-dark: #1e40af;
+  --secondary: #e5e7eb;
+  --border: #d1d5db;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --danger: #dc2626;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
 
-body {
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
   margin: 0;
   padding: 0;
-  background: #f4f4f4;
-  font-family: Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top left, #e0edff, #f5f7fb 40%, #ffffff);
+  color: var(--text-main);
 }
 
-.main-container {
-  max-width: 430px;
-  margin: auto;
-  padding: 18px;
-  background: #fff;
-  border-radius: 12px;
-  margin-top: 20px;
+body {
+  min-height: 100vh;
 }
 
-/* ============================= */
-/* TITULOS */
-/* ============================= */
+/* ============================ */
+/* TOP BAR */
+/* ============================ */
 
-.title {
-  text-align: center;
-  font-size: 22px;
-  margin-bottom: 15px;
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(209, 213, 219, 0.6);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-/* ============================= */
-/* INPUTS */
-/* ============================= */
+.logo {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
 
-input, select {
+/* ============================ */
+/* PAGE */
+/* ============================ */
+
+.page {
+  max-width: 960px;
+  margin: 24px auto;
+  padding: 0 12px 40px;
+}
+
+.page.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* ============================ */
+/* CARD */
+/* ============================ */
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: 24px 20px 28px;
+}
+
+.card-small {
+  max-width: 420px;
   width: 100%;
-  padding: 12px;
-  margin: 8px 0 16px 0;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 15px;
 }
 
-/* Ocultar input file */
+h1 {
+  margin: 0 0 6px;
+  font-size: 1.4rem;
+}
+
+h2 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+}
+
+.subtitle {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ============================ */
+/* FORM */
+/* ============================ */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="password"],
+textarea {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  outline: none;
+  background: #f9fafb;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.05s;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1px);
+  background: #ffffff;
+}
+
+textarea {
+  resize: vertical;
+}
+
 .hidden-file {
   display: none;
 }
 
-/* ============================= */
-/* BOTONES */
-/* ============================= */
+/* ============================ */
+/* BUTTONS */
+/* ============================ */
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
 
 .btn-primary {
-  background: #007aff;
-  color: white;
-  border: none;
-  padding: 12px 14px;
-  font-size: 15px;
-  border-radius: 8px;
-  cursor: pointer;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(37, 99, 235, 0.5);
 }
 
 .btn-primary.full {
@@ -65,140 +186,172 @@ input, select {
 }
 
 .btn-secondary {
-  background: #ddd;
-  color: #333;
-  border: none;
-  padding: 12px 14px;
-  font-size: 15px;
-  border-radius: 8px;
-  cursor: pointer;
+  background: #f3f4f6;
+  color: #111827;
+  padding: 9px 15px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  transition: background 0.1s, transform 0.08s, box-shadow 0.08s;
 }
 
-.btn-secondary.full {
-  width: 100%;
+.btn-secondary:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(148, 163, 184, 0.35);
 }
 
 .small {
-  padding: 8px 10px !important;
-  font-size: 14px !important;
+  font-size: 0.8rem;
+  padding: 6px 10px;
 }
 
-/* Botones lado a lado */
-.dual-buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
+/* ============================ */
+/* SECTIONS */
+/* ============================ */
+
+.section-block {
+  margin-top: 8px;
 }
 
-/* ============================= */
-/* PREVIEW DE IMÁGENES */
-/* ============================= */
+.help {
+  margin: 2px 0 8px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
 
-.preview-box {
-  width: 100%;
-  height: 240px;
-  background: #eee;
-  border-radius: 12px;
-  overflow: hidden;
+.divider {
+  border: none;
+  border-top: 1px dashed #e5e7eb;
+  margin: 14px 0;
+}
+
+/* ============================ */
+/* IMAGE PREVIEW */
+/* ============================ */
+
+.image-preview {
+  position: relative;
+  border: 1px dashed var(--border);
+  background: #f9fafb;
+  min-height: 120px;
+  border-radius: var(--radius-md);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.preview-box img {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
+.image-preview img {
+  max-width: 100%;
+  max-height: 240px;
+  display: block;
 }
 
-/* ============================= */
-/* ACCIONES */
-/* ============================= */
+.placeholder {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
 
-.actions {
-  margin-top: 10px;
+/* ============================ */
+/* PREVIEW ACTIONS */
+/* ============================ */
+
+.preview-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
 }
 
-/* ============================= */
+/* ============================ */
 /* TABS DE FIRMA */
-/* ============================= */
+/* ============================ */
 
 .tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  display: inline-flex;
+  border-radius: 999px;
+  background: #f3f4f6;
+  padding: 3px;
+  margin-bottom: 8px;
 }
 
-.tab {
+.tab-button {
   flex: 1;
-  text-align: center;
-  border-radius: 6px;
-  padding: 10px;
-  background: #ddd;
-  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: transparent;
+  color: var(--text-muted);
 }
 
-.tab.active {
-  background: #007aff;
-  color: white;
+.tab-button.active {
+  background: #ffffff;
+  color: var(--primary-dark);
+  box-shadow: 0 4px 9px rgba(148,163,184,0.25);
 }
 
-/* ============================= */
-/* CANVAS DE FIRMA */
-/* ============================= */
+/* ============================ */
+/* CANVAS FIRMA */
+/* ============================ */
 
-#firmaCanvas {
+.signature-wrapper {
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+  background: #ffffff;
+  overflow: hidden;
+}
+
+#signaturePad {
   width: 100%;
-  height: 200px;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  height: 180px;
+  touch-action: none;
+  display: block;
 }
 
-/* ============================= */
+/* ============================ */
 /* GLOBAL LOADER */
-/* ============================= */
+/* ============================ */
 
 .global-loader {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.65);
+  background: rgba(15, 23, 42, 0.25);
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 99999;
-  color: white;
-  font-size: 16px;
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  flex-direction: column;
+  gap: 10px;
+  color: #fff;
 }
 
-.spinner {
-  width: 38px;
-  height: 38px;
-  border: 4px solid white;
-  border-top: 4px solid transparent;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 12px;
+.loader {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 3px solid rgba(255,255,255,0.4);
+  border-top-color: #ffffff;
+  animation: spin .8s linear infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* ============================= */
-/* MODAL DE CÁMARA */
-/* ============================= */
+/* ============================ */
+/* MODAL CÁMARA */
+/* ============================ */
 
 .camera-modal {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.75);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 9000;
 }
 
@@ -206,15 +359,15 @@ input, select {
   width: 90%;
   max-width: 360px;
   background: #111;
-  padding: 12px;
+  padding: 14px;
   border-radius: 16px;
   position: relative;
 }
 
 #cameraVideo {
   width: 100%;
-  background: #000;
   border-radius: 12px;
+  background: #000;
 }
 
 .silhouette-overlay {
@@ -231,19 +384,5 @@ input, select {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-/* ============================= */
-/* RESPONSIVE */
-/* ============================= */
-
-@media (max-width: 380px) {
-  .camera-box {
-    width: 95%;
-  }
-
-  #firmaCanvas {
-    height: 160px;
-  }
+  gap: 10px;
 }
