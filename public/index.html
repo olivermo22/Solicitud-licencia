@@ -2,152 +2,184 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gestoría Virtual - Solicitud</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 
 <body>
-  <div class="top-bar">
+  <header class="top-bar">
     <div class="logo">Gestoría Virtual</div>
-    <button id="btnAdmin" class="btn-secondary small">Acceso operadores</button>
-  </div>
+    <button id="btnAdmin" class="btn-secondary">Acceso operadores</button>
+  </header>
 
-  <div class="page">
-    <div class="card">
+  <main class="page">
+    <section class="card">
       <h1>Solicitud de trámite</h1>
-      <p class="subtitle">Completa el formulario y envía tus documentos.</p>
+      <p class="subtitle">
+        Completa tus datos y adjunta la información requerida. Al final se abrirá WhatsApp con el mensaje listo.
+      </p>
 
       <form id="solicitudForm" class="form">
 
-        <!-- DATOS GENERALES -->
         <div class="field-group">
-          <label>Nombre completo</label>
+          <label for="nombre">Nombre completo *</label>
           <input id="nombre" type="text" required />
         </div>
 
         <div class="field-group">
-          <label>CURP</label>
+          <label for="curp">CURP *</label>
           <input id="curp" type="text" required />
         </div>
 
         <div class="field-group">
-          <label>Teléfono</label>
+          <label for="telefono">Teléfono (WhatsApp) *</label>
           <input id="telefono" type="tel" required />
         </div>
 
         <div class="field-group">
-          <label>Email (opcional)</label>
+          <label for="email">Correo electrónico (opcional)</label>
           <input id="email" type="email" />
+        </div>
+
+        <div class="field-group">
+          <label for="comentarios">Comentarios adicionales (opcional)</label>
+          <textarea id="comentarios" rows="3"></textarea>
         </div>
 
         <hr class="divider" />
 
         <!-- FOTO PERSONA -->
-        <h2>1. Foto de la persona</h2>
-        <p class="help">Tómate una foto de frente, con buena luz.</p>
+        <section class="section-block">
+          <h2>1. Foto de la persona</h2>
+          <p class="help">Toma la foto o selecciona un archivo.</p>
 
-        <div class="preview-container">
+          <div class="preview-actions">
+            <button type="button" id="btnPersonaCamera" class="btn-secondary small">
+              Tomar foto
+            </button>
+
+            <button type="button" id="btnPersonaFile" class="btn-secondary small">
+              Subir archivo
+            </button>
+            <input type="file" id="fotoPersonaInput" accept="image/*" class="hidden-file" />
+          </div>
+
           <div id="fotoPersonaPreview" class="image-preview empty">
             <span class="placeholder">Aún no hay foto</span>
           </div>
 
-          <div class="preview-actions" id="fotoPersonaActions" style="display:none;">
-            <button type="button" id="btnPersonaUsar" class="btn-primary small">Usar esta foto</button>
-            <button type="button" id="btnPersonaCambiar" class="btn-secondary small">Cambiar</button>
+          <div id="fotoPersonaActions" class="preview-actions" style="display:none;">
+            <button type="button" id="btnPersonaUsar" class="btn-primary small">
+              Usar esta foto
+            </button>
+            <button type="button" id="btnPersonaCambiar" class="btn-secondary small">
+              Cambiar foto
+            </button>
           </div>
-        </div>
-
-        <div class="side-by-side">
-          <button type="button" id="btnPersonaCamera" class="btn-primary full">Tomar foto</button>
-          <button type="button" id="btnPersonaFile" class="btn-secondary full">Subir archivo</button>
-        </div>
-
-        <input id="fotoPersonaInput" type="file" class="hidden-file" accept="image/*" />
-        <input id="personaPhotoUrl" type="hidden" />
+        </section>
 
         <hr class="divider" />
 
-        <!-- FOTO IDENTIFICACIÓN -->
-        <h2>2. Identificación oficial</h2>
-        <p class="help">Toma foto clara del frente del documento.</p>
+        <!-- IDENTIFICACIÓN -->
+        <section class="section-block">
+          <h2>2. Foto de identificación</h2>
+          <p class="help">Toma la foto o selecciona un archivo.</p>
 
-        <div class="preview-container">
+          <div class="preview-actions">
+            <button type="button" id="btnIdCamera" class="btn-secondary small">
+              Tomar foto
+            </button>
+
+            <button type="button" id="btnIdFile" class="btn-secondary small">
+              Subir archivo
+            </button>
+            <input type="file" id="fotoIdInput" accept="image/*" class="hidden-file" />
+          </div>
+
           <div id="fotoIdPreview" class="image-preview empty">
             <span class="placeholder">Aún no hay foto</span>
           </div>
 
-          <div class="preview-actions" id="fotoIdActions" style="display:none;">
-            <button type="button" id="btnIdUsar" class="btn-primary small">Usar esta foto</button>
+          <div id="fotoIdActions" class="preview-actions" style="display:none;">
+            <button type="button" id="btnIdUsar" class="btn-primary small">Usar</button>
             <button type="button" id="btnIdCambiar" class="btn-secondary small">Cambiar</button>
           </div>
-        </div>
-
-        <div class="side-by-side">
-          <button type="button" id="btnIdCamera" class="btn-primary full">Tomar foto</button>
-          <button type="button" id="btnIdFile" class="btn-secondary full">Subir archivo</button>
-        </div>
-
-        <input id="fotoIdInput" type="file" class="hidden-file" accept="image/*" />
-        <input id="idPhotoUrl" type="hidden" />
+        </section>
 
         <hr class="divider" />
 
         <!-- FIRMA -->
-        <h2>3. Firma</h2>
+        <section class="section-block">
+          <h2>3. Firma</h2>
 
-        <div class="tabs">
-          <button id="tabFirmaSubir" class="tab-button active" type="button">Subir imagen</button>
-          <button id="tabFirmaDibujar" class="tab-button" type="button">Dibujar firma</button>
-        </div>
+          <div class="tabs">
+            <button type="button" id="tabFirmaSubir" class="tab-button active">
+              Subir imagen
+            </button>
 
-        <!-- SUBIR FIRMA -->
-        <div id="firmaSubirPanel">
-          <input id="fotoFirmaInput" type="file" class="hidden-file" accept="image/*" />
-          <button type="button" class="btn-secondary full" onclick="fotoFirmaInput.click()">Elegir archivo</button>
+            <button type="button" id="tabFirmaDibujar" class="tab-button">
+              Dibujar firma
+            </button>
+          </div>
 
-          <div class="preview-container">
+          <!-- Subir firma -->
+          <div id="firmaSubirPanel">
+            <input type="file" id="fotoFirmaInput" accept="image/*" />
             <div id="firmaPreview" class="image-preview empty">
               <span class="placeholder">Aún no hay firma</span>
             </div>
           </div>
 
-          <div class="preview-actions" id="firmaActions" style="display:none;">
-            <button type="button" id="btnFirmaCambiar" class="btn-secondary small">Cambiar firma</button>
+          <!-- Dibujar firma -->
+          <div id="firmaDibujarPanel" style="display:none;">
+            <div class="signature-wrapper">
+              <canvas id="signaturePad"></canvas>
+            </div>
+
+            <div class="preview-actions">
+              <button type="button" id="btnLimpiarFirma" class="btn-secondary small">
+                Limpiar
+              </button>
+
+              <button type="button" id="btnConfirmarFirmaCanvas" class="btn-primary small">
+                Confirmar firma
+              </button>
+            </div>
           </div>
-        </div>
 
-        <!-- DIBUJAR FIRMA -->
-        <div id="firmaDibujarPanel" style="display:none;">
-          <div class="signature-wrapper">
-            <canvas id="signaturePad"></canvas>
+          <div id="firmaActions" class="preview-actions" style="display:none;">
+            <button type="button" id="btnFirmaCambiar" class="btn-secondary small">
+              Cambiar firma
+            </button>
           </div>
+        </section>
 
-          <div class="side-by-side">
-            <button type="button" id="btnLimpiarFirma" class="btn-secondary full">Limpiar</button>
-            <button type="button" id="btnConfirmarFirmaCanvas" class="btn-primary full">Confirmar firma</button>
-          </div>
+        <!-- HIDDEN FIELDS -->
+        <input type="hidden" id="personaPhotoUrl">
+        <input type="hidden" id="idPhotoUrl">
+        <input type="hidden" id="firmaUrl">
+
+        <div class="form-footer">
+          <button type="submit" class="btn-primary full">Enviar por WhatsApp</button>
+          <p class="small-note">Se abrirá WhatsApp con el mensaje listo.</p>
         </div>
-
-        <input id="firmaUrl" type="hidden" />
-
-        <!-- Comentarios -->
-        <div class="field-group">
-          <label>Comentarios</label>
-          <textarea id="comentarios" rows="3"></textarea>
-        </div>
-
-        <button type="submit" class="btn-primary full">Enviar solicitud por WhatsApp</button>
-
       </form>
-    </div>
+    </section>
+  </main>
+
+  <!-- LOADER -->
+  <div id="globalLoader" class="global-loader" style="display:none;">
+    <div class="loader"></div>
+    <span>Procesando imagen...</span>
   </div>
 
   <!-- MODAL CÁMARA -->
   <div id="cameraModal" class="camera-modal" style="display:none;">
     <div class="camera-box">
-      <video id="cameraVideo" autoplay></video>
-      <img id="silhouetteOverlay" class="silhouette-overlay" src="silueta.png" />
+      <video id="cameraVideo" autoplay playsinline></video>
+      <img id="cameraSilhouette" class="silhouette-overlay" src="/silueta.png" />
+
       <div class="camera-controls">
         <button id="takePhotoBtn" class="btn-primary full">Tomar foto</button>
         <button id="closeCameraBtn" class="btn-secondary full">Cancelar</button>
@@ -155,12 +187,6 @@
     </div>
   </div>
 
-  <!-- CARGANDO -->
-  <div id="globalLoader" class="global-loader" style="display:none;">
-    <div class="loader"></div>
-    Procesando imagen...
-  </div>
-
-  <script src="app.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>
