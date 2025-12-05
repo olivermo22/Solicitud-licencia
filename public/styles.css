@@ -387,10 +387,25 @@ button {
   gap: 10px;
 }
 
+/* ... (todo tu CSS original aquí, no lo repito para ahorrar espacio) ... */
+
+/* MINIATURAS PANEL ADMIN */
 .admin-thumb {
-  width: 60px;
+  width: 90px;
   height: 60px;
   object-fit: cover;
   border-radius: 6px;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
+}
+
+/* Vista previa desde cámara */
+.preview-img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.admin-thumb:hover {
+  transform: scale(1.05);
+  transition: 0.2s ease-in-out;
 }

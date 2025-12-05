@@ -1,156 +1,155 @@
-// app.js - Frontend principal del formulario de Gestoría Virtual
+/* ==========================================================
+   GESTORÍA VIRTUAL — app.js FINAL
+   Funcionalidad:
+   - Cámara frontal con silueta (foto persona)
+   - Cámara trasera sin silueta (foto identificación)
+   - Vista previa inmediata antes de subir
+   - Subida a servidor por AJAX
+   - Manejo de firma (archivo + canvas)
+   ========================================================== */
 
-// ===============================
-// CONFIGURACIÓN
-// ===============================
-const ADMIN_WHATSAPP_NUMBER = "527225600905"; // 52 + 7225600905
-
-// ===============================
-// REFERENCIAS GENERALES
-// ===============================
-const btnAdmin = document.getElementById("btnAdmin");
-const form = document.getElementById("solicitudForm");
+/* ----------------------------------------------------------
+   ELEMENTOS GENERALES
+---------------------------------------------------------- */
 const globalLoader = document.getElementById("globalLoader");
+const btnAdmin = document.getElementById("btnAdmin");
 
-// Datos del formulario
-const inputNombre = document.getElementById("nombre");
-const inputCurp = document.getElementById("curp");
-const inputTelefono = document.getElementById("telefono");
-const inputEmail = document.getElementById("email");
-const inputComentarios = document.getElementById("comentarios");
+/* Campos */
+const nombreInput = document.getElementById("nombre");
+const curpInput = document.getElementById("curp");
+const telefonoInput = document.getElementById("telefono");
+const emailInput = document.getElementById("email");
+const comentariosInput = document.getElementById("comentarios");
 
-// Foto persona
+/* ----------------------------------------------------------
+   FOTO PERSONA
+---------------------------------------------------------- */
 const btnPersonaCamera = document.getElementById("btnPersonaCamera");
 const btnPersonaFile = document.getElementById("btnPersonaFile");
 const fotoPersonaInput = document.getElementById("fotoPersonaInput");
+
 const fotoPersonaPreview = document.getElementById("fotoPersonaPreview");
 const fotoPersonaActions = document.getElementById("fotoPersonaActions");
 const btnPersonaUsar = document.getElementById("btnPersonaUsar");
 const btnPersonaCambiar = document.getElementById("btnPersonaCambiar");
+
 const inputPersonaPhotoUrl = document.getElementById("personaPhotoUrl");
 
-// Foto identificación
+/* Estado */
+let personaUrl = "";
+
+/* ----------------------------------------------------------
+   FOTO IDENTIFICACIÓN
+---------------------------------------------------------- */
 const btnIdCamera = document.getElementById("btnIdCamera");
 const btnIdFile = document.getElementById("btnIdFile");
 const fotoIdInput = document.getElementById("fotoIdInput");
+
 const fotoIdPreview = document.getElementById("fotoIdPreview");
 const fotoIdActions = document.getElementById("fotoIdActions");
 const btnIdUsar = document.getElementById("btnIdUsar");
 const btnIdCambiar = document.getElementById("btnIdCambiar");
+
 const inputIdPhotoUrl = document.getElementById("idPhotoUrl");
 
-// Firma
+/* Estado */
+let idUrl = "";
+
+/* ----------------------------------------------------------
+   FIRMA
+---------------------------------------------------------- */
 const tabFirmaSubir = document.getElementById("tabFirmaSubir");
 const tabFirmaDibujar = document.getElementById("tabFirmaDibujar");
+
 const firmaSubirPanel = document.getElementById("firmaSubirPanel");
 const firmaDibujarPanel = document.getElementById("firmaDibujarPanel");
 
 const fotoFirmaInput = document.getElementById("fotoFirmaInput");
 const firmaPreview = document.getElementById("firmaPreview");
+const firmaActions = document.getElementById("firmaActions");
+const btnFirmaCambiar = document.getElementById("btnFirmaCambiar");
 
 const signaturePad = document.getElementById("signaturePad");
 const btnLimpiarFirma = document.getElementById("btnLimpiarFirma");
-const btnConfirmarFirmaCanvas = document.getElementById(
-  "btnConfirmarFirmaCanvas"
-);
+const btnConfirmarFirmaCanvas = document.getElementById("btnConfirmarFirmaCanvas");
 
-const firmaActions = document.getElementById("firmaActions");
-const btnFirmaCambiar = document.getElementById("btnFirmaCambiar");
+let firmaUrl = "";
 const inputFirmaUrl = document.getElementById("firmaUrl");
 
-// Cámara (modal)
+/* ----------------------------------------------------------
+   CÁMARA (MODAL)
+---------------------------------------------------------- */
 const cameraModal = document.getElementById("cameraModal");
 const cameraVideo = document.getElementById("cameraVideo");
 const takePhotoBtn = document.getElementById("takePhotoBtn");
 const closeCameraBtn = document.getElementById("closeCameraBtn");
+const silhouetteOverlay = document.getElementById("silhouetteOverlay");
 
-let cameraStream = null;
 let cameraCallback = null;
+let currentCameraMode = "persona"; // persona | identificacion
 
-// Estado interno
-let personaUrl = "";
-let idUrl = "";
-let firmaUrl = "";
-
-// ===============================
-// NAVEGACIÓN PANEL ADMIN
-// ===============================
-if (btnAdmin) {
-  btnAdmin.addEventListener("click", () => {
-    window.location.href = "/login.html";
-  });
-}
-
-// ===============================
-// HELPERS UI
-// ===============================
-function showGlobalLoader(show) {
-  if (!globalLoader) return;
+/* ==========================================================
+   UTILIDADES
+========================================================== */
+function showLoader(show) {
   globalLoader.style.display = show ? "flex" : "none";
 }
 
-function setPreviewLoading(container) {
-  if (!container) return;
-  container.classList.add("loading");
-  const placeholder = container.querySelector(".placeholder");
-  if (placeholder) {
-    placeholder.textContent = "Procesando...";
-  }
-  const img = container.querySelector("img");
-  if (img) img.src = "";
+function setPreviewImage(container, url) {
+  container.innerHTML = `<img src="${url}" class="preview-img">`;
 }
 
-function setPreviewImage(container, url, altText) {
-  if (!container) return;
-  container.classList.remove("empty", "loading");
-  container.innerHTML = "";
-  const img = document.createElement("img");
-  img.src = url;
-  img.alt = altText || "";
-  container.appendChild(img);
+function resetPreview(container, placeholder) {
+  container.innerHTML = `<span class="placeholder">${placeholder}</span>`;
 }
 
-function resetPreview(container, placeholderText) {
-  if (!container) return;
-  container.classList.add("empty");
-  container.innerHTML = "";
-  const span = document.createElement("span");
-  span.className = "placeholder";
-  span.textContent = placeholderText || "Aún no hay imagen";
-  container.appendChild(span);
+async function uploadImage(fileOrBlob, type) {
+  const fd = new FormData();
+  fd.append("image", fileOrBlob);
+
+  const res = await fetch(`/api/upload/image?type=${type}`, {
+    method: "POST",
+    body: fd
+  });
+
+  if (!res.ok) throw new Error("Error subiendo imagen");
+
+  const data = await res.json();
+  return data.url;
 }
 
-// ===============================
-// CÁMARA (MODAL)
-// ===============================
-async function openCamera(callback) {
+/* ==========================================================
+   CÁMARA — ABRIR
+========================================================== */
+async function openCamera(mode, callback) {
+  currentCameraMode = mode;
   cameraCallback = callback;
-  cameraModal.style.display = "flex";
+
+  // silueta solo para foto persona
+  silhouetteOverlay.style.display = mode === "persona" ? "block" : "none";
+
+  const constraints = {
+    video: {
+      facingMode: mode === "identificacion"
+        ? { exact: "environment" }
+        : "user"
+    }
+  };
 
   try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user" },
-      audio: false,
-    });
-    cameraVideo.srcObject = cameraStream;
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    cameraVideo.srcObject = stream;
+    cameraModal.style.display = "flex";
   } catch (err) {
-    console.error("Error accediendo a la cámara:", err);
-    alert("No se pudo acceder a la cámara. Revisa los permisos.");
-    closeCamera();
+    alert("Error al acceder a la cámara.");
+    console.error(err);
   }
 }
 
-function closeCamera() {
-  cameraModal.style.display = "none";
-  if (cameraStream) {
-    cameraStream.getTracks().forEach((t) => t.stop());
-    cameraStream = null;
-  }
-  cameraCallback = null;
-}
-
-if (takePhotoBtn) {
-  takePhotoBtn.addEventListener("click", async () => {
+/* ==========================================================
+   CÁMARA — TOMAR FOTO
+========================================================== */
+takePhotoBtn.addEventListener("click", async () => {
   const canvas = document.createElement("canvas");
   canvas.width = cameraVideo.videoWidth;
   canvas.height = cameraVideo.videoHeight;
@@ -158,427 +157,314 @@ if (takePhotoBtn) {
   const ctx = canvas.getContext("2d");
   ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
 
-  // Convertir a blob usando Promise
-  const blob = await new Promise((resolve) =>
+  const localPreview = canvas.toDataURL("image/jpeg", 0.95);
+
+  // aplicar preview inmediato
+  if (currentCameraMode === "persona") {
+    setPreviewImage(fotoPersonaPreview, localPreview);
+    fotoPersonaActions.style.display = "flex";
+  } else {
+    setPreviewImage(fotoIdPreview, localPreview);
+    fotoIdActions.style.display = "flex";
+  }
+
+  const blob = await new Promise(resolve =>
     canvas.toBlob(resolve, "image/jpeg", 0.95)
   );
 
-  if (!blob) {
-    alert("No se pudo obtener la foto, intenta nuevamente.");
-    return;
-  }
-
-  // Enviar la foto a quien la solicitó
-  if (cameraCallback) {
-    await cameraCallback(blob);
+  if (cameraCallback && blob) {
+    cameraCallback(blob);
   }
 
   closeCamera();
 });
 
+/* ==========================================================
+   CERRAR CÁMARA
+========================================================== */
+closeCameraBtn.addEventListener("click", () => {
+  closeCamera();
+});
+
+function closeCamera() {
+  cameraModal.style.display = "none";
+  const stream = cameraVideo.srcObject;
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  cameraVideo.srcObject = null;
 }
 
-if (closeCameraBtn) {
-  closeCameraBtn.addEventListener("click", () => {
-    closeCamera();
-  });
-}
+/* ==========================================================
+   FOTO PERSONA — SUBIR ARCHIVO
+========================================================== */
+btnPersonaFile.addEventListener("click", () => fotoPersonaInput.click());
 
-// ===============================
-// SUBIDA GENÉRICA DE IMÁGENES
-// ===============================
-async function uploadImage(fileOrBlob, type) {
-  const formData = new FormData();
-  formData.append("image", fileOrBlob);
+fotoPersonaInput.addEventListener("change", async () => {
+  const file = fotoPersonaInput.files[0];
+  if (!file) return;
 
-  const res = await fetch(`/api/upload/image?type=${encodeURIComponent(type)}`, {
-    method: "POST",
-    body: formData,
-  });
+  setPreviewImage(fotoPersonaPreview, URL.createObjectURL(file));
+  fotoPersonaActions.style.display = "flex";
 
-  if (!res.ok) {
-    throw new Error("Error subiendo la imagen al servidor");
-  }
-
-  const data = await res.json();
-  if (!data.url) {
-    throw new Error("El servidor no devolvió la URL de la imagen");
-  }
-  return data.url;
-}
-
-// ===============================
-// FOTO PERSONA
-// ===============================
-if (btnPersonaFile && fotoPersonaInput) {
-  btnPersonaFile.addEventListener("click", () => {
-    fotoPersonaInput.click();
-  });
-
-  fotoPersonaInput.addEventListener("change", async () => {
-    const file = fotoPersonaInput.files[0];
-    if (!file) return;
-    await handlePersonaImage(file);
-  });
-}
-
-if (btnPersonaCamera) {
-  btnPersonaCamera.addEventListener("click", () => {
-    openCamera(async (blob) => {
-      await handlePersonaImage(blob);
-    });
-  });
-}
-
-async function handlePersonaImage(fileOrBlob) {
+  showLoader(true);
   try {
-    setPreviewLoading(fotoPersonaPreview);
-    showGlobalLoader(true);
-
-    const url = await uploadImage(fileOrBlob, "persona");
-    personaUrl = url;
-    if (inputPersonaPhotoUrl) inputPersonaPhotoUrl.value = url;
-
-    setPreviewImage(fotoPersonaPreview, url, "Foto de la persona");
-    if (fotoPersonaActions) fotoPersonaActions.style.display = "flex";
-
-    if (btnPersonaUsar) {
-      btnPersonaUsar.onclick = () => {
-        alert("Foto de la persona confirmada.");
-      };
-    }
-
-    if (btnPersonaCambiar) {
-      btnPersonaCambiar.onclick = () => {
-        personaUrl = "";
-        if (inputPersonaPhotoUrl) inputPersonaPhotoUrl.value = "";
-        resetPreview(fotoPersonaPreview, "Aún no hay foto");
-        if (fotoPersonaActions) fotoPersonaActions.style.display = "none";
-      };
-    }
+    personaUrl = await uploadImage(file, "persona");
+    inputPersonaPhotoUrl.value = personaUrl;
   } catch (err) {
-    console.error(err);
-    alert("Ocurrió un error al procesar la foto de la persona.");
-    resetPreview(fotoPersonaPreview, "Aún no hay foto");
-    if (fotoPersonaActions) fotoPersonaActions.style.display = "none";
-  } finally {
-    showGlobalLoader(false);
+    alert("Error subiendo foto");
   }
-}
+  showLoader(false);
+});
 
-// ===============================
-// FOTO IDENTIFICACIÓN
-// ===============================
-if (btnIdFile && fotoIdInput) {
-  btnIdFile.addEventListener("click", () => {
-    fotoIdInput.click();
-  });
-
-  fotoIdInput.addEventListener("change", async () => {
-    const file = fotoIdInput.files[0];
-    if (!file) return;
-    await handleIdImage(file);
-  });
-}
-
-if (btnIdCamera) {
-  btnIdCamera.addEventListener("click", () => {
-    openCamera(async (blob) => {
-      await handleIdImage(blob);
-    });
-  });
-}
-
-async function handleIdImage(fileOrBlob) {
-  try {
-    setPreviewLoading(fotoIdPreview);
-    showGlobalLoader(true);
-
-    const url = await uploadImage(fileOrBlob, "identificacion");
-    idUrl = url;
-    if (inputIdPhotoUrl) inputIdPhotoUrl.value = url;
-
-    setPreviewImage(fotoIdPreview, url, "Identificación");
-    if (fotoIdActions) fotoIdActions.style.display = "flex";
-
-    if (btnIdUsar) {
-      btnIdUsar.onclick = () => {
-        alert("Foto de identificación confirmada.");
-      };
-    }
-
-    if (btnIdCambiar) {
-      btnIdCambiar.onclick = () => {
-        idUrl = "";
-        if (inputIdPhotoUrl) inputIdPhotoUrl.value = "";
-        resetPreview(fotoIdPreview, "Aún no hay foto");
-        if (fotoIdActions) fotoIdActions.style.display = "none";
-      };
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Ocurrió un error al procesar la foto de identificación.");
-    resetPreview(fotoIdPreview, "Aún no hay foto");
-    if (fotoIdActions) fotoIdActions.style.display = "none";
-  } finally {
-    showGlobalLoader(false);
-  }
-}
-
-// ===============================
-// FIRMA - TABS (SUBIR / DIBUJAR)
-// ===============================
-if (tabFirmaSubir && tabFirmaDibujar && firmaSubirPanel && firmaDibujarPanel) {
-  tabFirmaSubir.addEventListener("click", () => {
-    tabFirmaSubir.classList.add("active");
-    tabFirmaDibujar.classList.remove("active");
-    firmaSubirPanel.style.display = "block";
-    firmaDibujarPanel.style.display = "none";
-  });
-
-  tabFirmaDibujar.addEventListener("click", () => {
-    tabFirmaSubir.classList.remove("active");
-    tabFirmaDibujar.classList.add("active");
-    firmaSubirPanel.style.display = "none";
-    firmaDibujarPanel.style.display = "block";
-    initSignaturePad();
-  });
-}
-
-// ===============================
-// FIRMA - SUBIR ARCHIVO
-// ===============================
-if (fotoFirmaInput) {
-  fotoFirmaInput.addEventListener("change", async () => {
-    const file = fotoFirmaInput.files[0];
-    if (!file) return;
-
+/* ==========================================================
+   FOTO PERSONA — TOMAR FOTO
+========================================================== */
+btnPersonaCamera.addEventListener("click", () => {
+  openCamera("persona", async (blob) => {
+    showLoader(true);
     try {
-      setPreviewLoading(firmaPreview);
-      showGlobalLoader(true);
-
-      const url = await uploadImage(file, "firma");
-      firmaUrl = url;
-      if (inputFirmaUrl) inputFirmaUrl.value = url;
-
-      setPreviewImage(firmaPreview, url, "Firma");
-      if (firmaActions) firmaActions.style.display = "flex";
+      personaUrl = await uploadImage(blob, "persona");
+      inputPersonaPhotoUrl.value = personaUrl;
     } catch (err) {
-      console.error(err);
-      alert("Error subiendo la firma.");
-      resetPreview(firmaPreview, "Aún no hay firma");
-      if (firmaActions) firmaActions.style.display = "none";
-    } finally {
-      showGlobalLoader(false);
+      alert("Error subiendo foto persona.");
     }
+    showLoader(false);
   });
-}
+});
 
-// ===============================
-// FIRMA - DIBUJAR EN CANVAS
-// ===============================
-let firmaCtx = null;
+btnPersonaCambiar.addEventListener("click", () => {
+  personaUrl = "";
+  inputPersonaPhotoUrl.value = "";
+  resetPreview(fotoPersonaPreview, "Aún no hay foto");
+  fotoPersonaActions.style.display = "none";
+});
+
+/* ==========================================================
+   FOTO IDENTIFICACIÓN — SUBIR ARCHIVO
+========================================================== */
+btnIdFile.addEventListener("click", () => fotoIdInput.click());
+
+fotoIdInput.addEventListener("change", async () => {
+  const file = fotoIdInput.files[0];
+  if (!file) return;
+
+  setPreviewImage(fotoIdPreview, URL.createObjectURL(file));
+  fotoIdActions.style.display = "flex";
+
+  showLoader(true);
+  try {
+    idUrl = await uploadImage(file, "identificacion");
+    inputIdPhotoUrl.value = idUrl;
+  } catch (err) {
+    alert("Error subiendo identificación.");
+  }
+  showLoader(false);
+});
+
+/* ==========================================================
+   FOTO IDENTIFICACIÓN — TOMAR FOTO
+========================================================== */
+btnIdCamera.addEventListener("click", () => {
+  openCamera("identificacion", async (blob) => {
+    showLoader(true);
+    try {
+      idUrl = await uploadImage(blob, "identificacion");
+      inputIdPhotoUrl.value = idUrl;
+    } catch (err) {
+      alert("Error subiendo identificación.");
+    }
+    showLoader(false);
+  });
+});
+
+btnIdCambiar.addEventListener("click", () => {
+  idUrl = "";
+  inputIdPhotoUrl.value = "";
+  resetPreview(fotoIdPreview, "Aún no hay foto");
+  fotoIdActions.style.display = "none";
+});
+
+/* ==========================================================
+   FIRMA — SUBIR ARCHIVO
+========================================================== */
+fotoFirmaInput.addEventListener("change", async () => {
+  const file = fotoFirmaInput.files[0];
+  if (!file) return;
+
+  setPreviewImage(firmaPreview, URL.createObjectURL(file));
+  firmaActions.style.display = "flex";
+
+  showLoader(true);
+  try {
+    firmaUrl = await uploadImage(file, "firma");
+    inputFirmaUrl.value = firmaUrl;
+  } catch (err) {
+    alert("Error subiendo firma.");
+  }
+  showLoader(false);
+});
+
+btnFirmaCambiar.addEventListener("click", () => {
+  firmaUrl = "";
+  inputFirmaUrl.value = "";
+  resetPreview(firmaPreview, "Aún no hay firma");
+  firmaActions.style.display = "none";
+});
+
+/* ==========================================================
+   FIRMA — CANVAS
+========================================================== */
 let drawing = false;
+let firmaCtx = null;
 
-function initSignaturePad() {
-  if (!signaturePad) return;
-
+function initSignatureCanvas() {
   const rect = signaturePad.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-
-  signaturePad.width = rect.width * dpr;
-  signaturePad.height = rect.height * dpr;
+  signaturePad.width = rect.width;
+  signaturePad.height = rect.height;
 
   firmaCtx = signaturePad.getContext("2d");
-  firmaCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
   firmaCtx.fillStyle = "#ffffff";
   firmaCtx.fillRect(0, 0, rect.width, rect.height);
 
   firmaCtx.lineWidth = 2;
   firmaCtx.lineCap = "round";
-  firmaCtx.strokeStyle = "#111827";
+  firmaCtx.strokeStyle = "#111";
 }
 
-function getCanvasPos(e) {
+tabFirmaDibujar.addEventListener("click", () => {
+  tabFirmaSubir.classList.remove("active");
+  tabFirmaDibujar.classList.add("active");
+
+  firmaSubirPanel.style.display = "none";
+  firmaDibujarPanel.style.display = "block";
+
+  initSignatureCanvas();
+});
+
+tabFirmaSubir.addEventListener("click", () => {
+  tabFirmaDibujar.classList.remove("active");
+  tabFirmaSubir.classList.add("active");
+
+  firmaSubirPanel.style.display = "block";
+  firmaDibujarPanel.style.display = "none";
+});
+
+function getPos(e) {
   const rect = signaturePad.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  return {
-    x: clientX - rect.left,
-    y: clientY - rect.top,
-  };
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+  return { x, y };
 }
 
-if (signaturePad) {
-  ["mousedown", "touchstart"].forEach((ev) => {
-    signaturePad.addEventListener(ev, (e) => {
-      e.preventDefault();
-      if (!firmaCtx) initSignaturePad();
-      drawing = true;
-      const { x, y } = getCanvasPos(e);
-      firmaCtx.beginPath();
-      firmaCtx.moveTo(x, y);
-    });
-  });
+signaturePad.addEventListener("mousedown", (e) => {
+  drawing = true;
+  const { x, y } = getPos(e);
+  firmaCtx.beginPath();
+  firmaCtx.moveTo(x, y);
+});
 
-  ["mousemove", "touchmove"].forEach((ev) => {
-    signaturePad.addEventListener(ev, (e) => {
-      if (!drawing || !firmaCtx) return;
-      e.preventDefault();
-      const { x, y } = getCanvasPos(e);
-      firmaCtx.lineTo(x, y);
-      firmaCtx.stroke();
-    });
-  });
+signaturePad.addEventListener("mousemove", (e) => {
+  if (!drawing) return;
+  const { x, y } = getPos(e);
+  firmaCtx.lineTo(x, y);
+  firmaCtx.stroke();
+});
 
-  ["mouseup", "mouseleave", "touchend", "touchcancel"].forEach((ev) => {
-    signaturePad.addEventListener(ev, (e) => {
-      if (!drawing) return;
-      e.preventDefault();
-      drawing = false;
-    });
-  });
-}
+signaturePad.addEventListener("mouseup", () => { drawing = false; });
 
-if (btnLimpiarFirma && signaturePad) {
-  btnLimpiarFirma.addEventListener("click", () => {
-    initSignaturePad();
-    resetPreview(firmaPreview, "Aún no hay firma");
-    if (firmaActions) firmaActions.style.display = "none";
-    firmaUrl = "";
-    if (inputFirmaUrl) inputFirmaUrl.value = "";
-  });
-}
+signaturePad.addEventListener("touchstart", (e) => {
+  drawing = true;
+  const { x, y } = getPos(e);
+  firmaCtx.beginPath();
+  firmaCtx.moveTo(x, y);
+});
 
-if (btnConfirmarFirmaCanvas && signaturePad) {
-  btnConfirmarFirmaCanvas.addEventListener("click", () => {
-    if (!firmaCtx) {
-      alert("Primero dibuja tu firma.");
-      return;
-    }
+signaturePad.addEventListener("touchmove", (e) => {
+  if (!drawing) return;
+  const { x, y } = getPos(e);
+  firmaCtx.lineTo(x, y);
+  firmaCtx.stroke();
+});
 
-    signaturePad.toBlob(
-      async (blob) => {
-        if (!blob) {
-          alert("No se pudo leer la firma dibujada.");
-          return;
-        }
-        try {
-          setPreviewLoading(firmaPreview);
-          showGlobalLoader(true);
+signaturePad.addEventListener("touchend", () => { drawing = false; });
 
-          const url = await uploadImage(blob, "firma");
-          firmaUrl = url;
-          if (inputFirmaUrl) inputFirmaUrl.value = url;
+btnLimpiarFirma.addEventListener("click", () => {
+  initSignatureCanvas();
+  firmaUrl = "";
+  inputFirmaUrl.value = "";
+  resetPreview(firmaPreview, "Aún no hay firma");
+  firmaActions.style.display = "none";
+});
 
-          setPreviewImage(firmaPreview, url, "Firma");
-          if (firmaActions) firmaActions.style.display = "flex";
-        } catch (err) {
-          console.error(err);
-          alert("Error subiendo la firma dibujada.");
-          resetPreview(firmaPreview, "Aún no hay firma");
-          if (firmaActions) firmaActions.style.display = "none";
-        } finally {
-          showGlobalLoader(false);
-        }
-      },
-      "image/png"
-    );
-  });
-}
+btnConfirmarFirmaCanvas.addEventListener("click", () => {
+  signaturePad.toBlob(async (blob) => {
+    if (!blob) return;
 
-if (btnFirmaCambiar) {
-  btnFirmaCambiar.addEventListener("click", () => {
-    firmaUrl = "";
-    if (inputFirmaUrl) inputFirmaUrl.value = "";
-    resetPreview(firmaPreview, "Aún no hay firma");
-    if (firmaActions) firmaActions.style.display = "none";
-  });
-}
+    const localUrl = URL.createObjectURL(blob);
+    setPreviewImage(firmaPreview, localUrl);
+    firmaActions.style.display = "flex";
 
-// ===============================
-// ENVÍO DEL FORMULARIO
-// ===============================
-if (form) {
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const nombre = inputNombre.value.trim();
-    const curp = inputCurp.value.trim();
-    const telefono = inputTelefono.value.trim();
-    const email = inputEmail.value.trim();
-    const comentarios = inputComentarios.value.trim();
-
-    if (!nombre || !curp || !telefono) {
-      alert("Por favor, llena al menos Nombre, CURP y Teléfono.");
-      return;
-    }
-
-    if (!personaUrl) {
-      alert("Falta la foto de la persona.");
-      return;
-    }
-    if (!idUrl) {
-      alert("Falta la foto de la identificación.");
-      return;
-    }
-    if (!firmaUrl) {
-      alert("Falta la firma.");
-      return;
-    }
-
-    const payload = {
-      nombre,
-      curp,
-      telefono,
-      email,
-      comentarios,
-      personaPhotoUrl: personaUrl,
-      idPhotoUrl: idUrl,
-      firmaUrl,
-    };
-
+    showLoader(true);
     try {
-      showGlobalLoader(true);
-
-      // 1) Guardar en el servidor para el panel admin
-      const res = await fetch("/api/forms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        throw new Error("Error guardando el formulario en el servidor");
-      }
-
-      // 2) Construir mensaje de WhatsApp
-      const baseUrl = window.location.origin;
-      const lines = [
-        "NUEVA SOLICITUD DE TRÁMITE",
-        "",
-        `Nombre: ${nombre}`,
-        `CURP: ${curp}`,
-        `Teléfono: ${telefono}`,
-        email ? `Email: ${email}` : "",
-        comentarios ? `Comentarios: ${comentarios}` : "",
-        "",
-        `Foto persona: ${baseUrl}${personaUrl}`,
-        `Identificación: ${baseUrl}${idUrl}`,
-        `Firma: ${baseUrl}${firmaUrl}`,
-        "",
-        "Enviado desde el formulario web.",
-      ].filter(Boolean);
-
-      const text = encodeURIComponent(lines.join("\n"));
-      const waUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${text}`;
-      window.location.href = waUrl;
+      firmaUrl = await uploadImage(blob, "firma");
+      inputFirmaUrl.value = firmaUrl;
     } catch (err) {
-      console.error(err);
-      alert("Ocurrió un error al guardar o enviar la solicitud. Intenta de nuevo.");
-    } finally {
-      showGlobalLoader(false);
+      alert("Error subiendo firma.");
     }
+    showLoader(false);
+  });
+});
+
+/* ==========================================================
+   ENVIAR FORMULARIO
+========================================================== */
+document.getElementById("solicitudForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (!personaUrl) return alert("Falta foto persona");
+  if (!idUrl) return alert("Falta identificación");
+  if (!firmaUrl) return alert("Falta firma");
+
+  const payload = {
+    nombre: nombreInput.value.trim(),
+    curp: curpInput.value.trim(),
+    telefono: telefonoInput.value.trim(),
+    email: emailInput.value.trim(),
+    comentarios: comentariosInput.value.trim(),
+    personaPhotoUrl: personaUrl,
+    idPhotoUrl: idUrl,
+    firmaUrl: firmaUrl
+  };
+
+  showLoader(true);
+  try {
+    await fetch("/api/forms", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    // WhatsApp
+    const msg =
+      `Nueva solicitud de trámite:%0A%0A` +
+      `Nombre: ${payload.nombre}%0A` +
+      `CURP: ${payload.curp}%0A` +
+      `Teléfono: ${payload.telefono}%0A` +
+      `Foto persona: ${payload.personaPhotoUrl}%0A` +
+      `Identificación: ${payload.idPhotoUrl}%0A` +
+      `Firma: ${payload.firmaUrl}%0A`;
+
+    window.location.href = `https://wa.me/527225600905?text=${msg}`;
+  } catch (err) {
+    alert("Error enviando formulario.");
+  }
+  showLoader(false);
+});
+
+/* ==========================================================
+   PANEL ADMIN
+========================================================== */
+if (btnAdmin) {
+  btnAdmin.addEventListener("click", () => {
+    window.location.href = "/login.html";
   });
 }
