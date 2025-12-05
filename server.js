@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import multer from "multer";
 import session from "express-session";
-import Jimp from "jimp";
+import * as Jimp from "jimp";
 import { pipeline } from "@xenova/transformers";
 import { fileURLToPath } from "url";
 
