@@ -531,186 +531,161 @@ if (btnFirmaCambiar) {
 // ===============================
 if (form) {
   form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const nombre = inputNombre.value.trim();
-    const apellidos = inputApellidos.value.trim();
-    const curp = inputCurp.value.trim();
-    const telefono = inputTelefono.value.trim();
-    const tipoLicencia = inputTipoLicencia.value;
-    const vigencia = inputVigencia.value;
-    const domicilioAceptado = inputDomicilioGuerrero.checked;
-    const alergias = inputAlergias.value.trim();
-    const tipoSangre = inputTipoSangre.value;
-    const emergenciaNombre = inputEmergenciaNombre.value.trim();
-    const emergenciaTelefono = inputEmergenciaTelefono.value.trim();
+  // ================================
+  // OBTENER DATOS NUEVOS
+  // ================================
+  const nombre = document.getElementById("nombre").value.trim();
+  const apellidos = document.getElementById("apellidos").value.trim();
+  const telefono = document.getElementById("telefono").value.trim();
+  const curp = document.getElementById("curp").value.trim();
 
-    const envioNombreDestinatario = inputEnvioNombreDestinatario.value.trim();
-    const envioTelefonoDestinatario = inputEnvioTelefonoDestinatario.value.trim();
-    const envioCalle = inputEnvioCalle.value.trim();
-    const envioNumero = inputEnvioNumero.value.trim();
-    const envioColonia = inputEnvioColonia.value.trim();
-    const envioCP = inputEnvioCP.value.trim();
-    const envioCiudadEstado = inputEnvioCiudadEstado.value.trim();
+  const licencia = document.getElementById("tipoLicencia").value;
+  const vigencia = document.getElementById("vigencia").value;
+  const acepto = document.getElementById("domicilioGuerrero").checked;
 
-    if (!nombre || !apellidos || !curp || !telefono) {
-      alert("Por favor, llena al menos Nombre(s), Apellidos, CURP y Teléfono.");
-      return;
-    }
+  const alergias = document.getElementById("alergias").value.trim();
+  const tipoSangre = document.getElementById("tipoSangre").value;
 
-    if (!tipoLicencia) {
-      alert("Selecciona el tipo de licencia.");
-      return;
-    }
+  const emergenciaNombre = document
+    .getElementById("emergenciaNombre")
+    .value.trim();
+  const emergenciaTelefono = document
+    .getElementById("emergenciaTelefono")
+    .value.trim();
 
-    if (!vigencia) {
-      alert("Selecciona la vigencia de la licencia.");
-      return;
-    }
+  const envioNombreDest = document
+    .getElementById("envioNombreDest")
+    .value.trim();
+  const envioTelefonoDest = document
+    .getElementById("envioTelefonoDest")
+    .value.trim();
+  const envioCalle = document.getElementById("envioCalle").value.trim();
+  const envioNumero = document.getElementById("envioNumero").value.trim();
+  const envioColonia = document.getElementById("envioColonia").value.trim();
+  const envioCP = document.getElementById("envioCP").value.trim();
+  const envioCiudadEstado = document
+    .getElementById("envioCiudadEstado")
+    .value.trim();
 
-    if (!domicilioAceptado) {
-      alert("Debes aceptar que la licencia lleve domicilio del estado de Guerrero.");
-      return;
-    }
+  const nombreCompleto = `${nombre} ${apellidos}`.trim();
 
-    if (!tipoSangre) {
-      alert("Selecciona el tipo de sangre.");
-      return;
-    }
+  // ================================
+  // VALIDACIONES
+  // ================================
+  if (!nombre || !apellidos) return alert("Ingresa nombre y apellidos.");
+  if (!telefono) return alert("Ingresa tu número telefónico.");
+  if (!curp) return alert("Ingresa tu CURP.");
+  if (!acepto)
+    return alert("Debes aceptar el domicilio de Guerrero para continuar.");
 
-    if (!emergenciaNombre || !emergenciaTelefono) {
-      alert("Completa los datos de contacto de emergencia.");
-      return;
-    }
+  if (!personaUrl) return alert("Falta la foto de la persona.");
+  if (!idUrl) return alert("Falta la foto de identificación.");
+  if (!firmaUrl) return alert("Falta la firma.");
 
-    if (
-      !envioNombreDestinatario ||
-      !envioTelefonoDestinatario ||
-      !envioCalle ||
-      !envioNumero ||
-      !envioColonia ||
-      !envioCP ||
-      !envioCiudadEstado
-    ) {
-      alert("Completa todos los datos de envío.");
-      return;
-    }
+  // ================================
+  // TEXTO DE LICENCIA
+  // ================================
+  let licenciaTexto = "";
+  if (licencia === "A") licenciaTexto = "AUTOMOVILISTA - A";
+  if (licencia === "C") licenciaTexto = "CHOFER - C";
+  if (licencia === "M") licenciaTexto = "MOTOCICLISTA - M";
 
-    if (!personaUrl) {
-      alert("Falta la foto de la persona.");
-      return;
-    }
-    if (!idUrl) {
-      alert("Falta la foto de la identificación.");
-      return;
-    }
-    if (!firmaUrl) {
-      alert("Falta la firma.");
-      return;
-    }
+  let vigenciaTexto = "";
+  if (vigencia === "3") vigenciaTexto = "3 AÑOS $650";
+  if (vigencia === "5") vigenciaTexto = "5 AÑOS $700";
 
-    const payload = {
-      nombre,
-      apellidos,
-      curp,
-      telefono,
-      tipoLicencia,
-      vigencia,
-      domicilioAceptado,
-      alergias,
-      tipoSangre,
-      emergenciaNombre,
-      emergenciaTelefono,
-      envioNombreDestinatario,
-      envioTelefonoDestinatario,
-      envioCalle,
-      envioNumero,
-      envioColonia,
-      envioCP,
-      envioCiudadEstado,
-      personaPhotoUrl: personaUrl,
-      idPhotoUrl: idUrl,
-      firmaUrl,
-    };
+  // ================================
+  // OBTENER FOLIO DEL SERVIDOR
+  // ================================
+  let folio = 0;
+  try {
+    const resFolio = await fetch("/api/next-folio");
+    const dataFolio = await resFolio.json();
+    folio = dataFolio.folio;
+  } catch (err) {
+    console.error(err);
+    return alert("Error obteniendo folio. Intenta nuevamente.");
+  }
 
-    try {
-      showGlobalLoader(true);
+  // ================================
+  // GUARDAR FORMULARIO EN BACKEND
+  // ================================
+  const payload = {
+    folio,
+    nombre,
+    apellidos,
+    telefono,
+    curp,
+    licencia,
+    vigencia,
+    acepto,
+    alergias,
+    tipoSangre,
+    emergenciaNombre,
+    emergenciaTelefono,
+    envioNombreDest,
+    envioTelefonoDest,
+    envioCalle,
+    envioNumero,
+    envioColonia,
+    envioCP,
+    envioCiudadEstado,
+    personaUrl,
+    idUrl,
+    firmaUrl,
+  };
 
-      // 1) Guardar en el servidor para el panel admin (y obtener # de respuesta)
-      const res = await fetch("/api/forms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+  try {
+    await fetch("/api/forms", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error(err);
+    return alert("Error guardando solicitud.");
+  }
 
-      if (!res.ok) {
-        throw new Error("Error guardando el formulario en el servidor");
-      }
+  // ================================
+  // CONSTRUIR MENSAJE WHATSAPP
+  // ================================
+  const lineas = [
+    "SOLICITUD LICENCIA DE CONDUCIR",
+    `Respuesta #${folio}`,
+    "",
+    `NUM TELEFONO : ${telefono}`,
+    `TIPO DE LICENCIA : ${licenciaTexto}`,
+    `VALIDA POR : ${vigenciaTexto}`,
+    `NOMBRE COMPLETO : ${nombreCompleto}`,
+    `CURP : ${curp}`,
+    `DOMICILIO DE GUERRERO ACEPTADO : SI`,
+    `ALERGIAS/RESTRICCIONES : ${alergias || "Ninguna"}`,
+    `TIPO DE SANGRE : ${tipoSangre}`,
+    `CONTACTO DE EMERGENCIA : ${emergenciaNombre} ${emergenciaTelefono}`,
+    "",
+    "DATOS DE ENVÍO",
+    `NOMBRE DESTINATARIO : ${envioNombreDest}`,
+    `TELÉFONO DESTINATARIO : ${envioTelefonoDest}`,
+    `CALLE : ${envioCalle}`,
+    `NÚMERO : ${envioNumero}`,
+    `COLONIA : ${envioColonia}`,
+    `CP : ${envioCP}`,
+    `CIUDAD Y ESTADO : ${envioCiudadEstado}`,
+    "",
+    "FOTO DE LA PERSONA:",
+    personaUrl,
+    "",
+    "IDENTIFICACIÓN:",
+    idUrl,
+    "",
+    "FIRMA:",
+    firmaUrl,
+    "",
+    `PRESIONA EN "ENVIAR POR WHATSAPP", TU SOLICITUD SERÁ ASIGNADA AL NUM: 722 560 09 05 DONDE CONTINUARÁS TU TRÁMITE CON ATENCIÓN PERSONALIZADA.`,
+  ];
 
-      const data = await res.json();
-      const folio = data?.form?.responseNumber || data?.form?.id || "----";
-
-      // 2) Construir mensaje de WhatsApp
-      const licenciaMap = {
-        A: "AUTOMOVILISTA - A",
-        C: "CHOFER - C",
-        M: "MOTOCICLISTA - M",
-      };
-      const vigenciaMap = {
-        "3": "3 AÑOS $650",
-        "5": "5 AÑOS $700",
-      };
-
-      const licenciaTexto = licenciaMap[tipoLicencia] || tipoLicencia;
-      const vigenciaTexto = vigenciaMap[vigencia] || vigencia;
-      const domicilioTexto = domicilioAceptado ? "SI" : "NO";
-      const nombreCompleto = `${nombre} ${apellidos}`.trim();
-
-      const lineas = [
-        "SOLICITUD LICENCIA DE CONDUCIR",
-        `Respuesta #${folio}`,
-        "",
-        `NUM TELEFONO : ${telefono}`,
-        `TIPO DE LICENCIA : ${licenciaTexto}`,
-        `VALIDA POR : ${vigenciaTexto}`,
-        `NOMBRE COMPLETO : ${nombreCompleto}`,
-        `CURP : ${curp}`,
-        `DOMICILIO DE GUERRERO ACEPTADO : ${domicilioTexto}`,
-        `ALERGIAS/RESTRICCIONES : ${alergias || "Ninguna"}`,
-        `TIPO DE SANGRE : ${tipoSangre}`,
-        `CONTACTO DE EMERGENCIA : ${emergenciaNombre} ${emergenciaTelefono}`,
-        "",
-        "DATOS DE ENVÍO",
-        `NOMBRE DESTINATARIO : ${envioNombreDestinatario}`,
-        `TELÉFONO DESTINATARIO : ${envioTelefonoDestinatario}`,
-        `CALLE : ${envioCalle}`,
-        `NÚMERO : ${envioNumero}`,
-        `COLONIA : ${envioColonia}`,
-        `CP : ${envioCP}`,
-        `CIUDAD Y ESTADO : ${envioCiudadEstado}`,
-        "",
-        "FOTO DE LA PERSONA:",
-  personaUrl,
-  "",
-  "IDENTIFICACIÓN:",
-  idUrl,
-  "",
-  "FIRMA:",
-  firmaUrl,
-  "",
-  `PRESIONA EN "ENVIAR POR WHATSAPP", TU SOLICITUD SERÁ ASIGNADA AL NUM: 722 560 09 05 DONDE CONTINUARÁS TU TRÁMITE CON ATENCIÓN PERSONALIZADA.`,
-];
-
-      const text = encodeURIComponent(lineas.join("\n"));
-      const waUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${text}`;
-      window.location.href = waUrl;
-    } catch (err) {
-      console.error(err);
-      alert(
-        "Ocurrió un error al guardar o enviar la solicitud. Intenta de nuevo."
-      );
-    } finally {
-      showGlobalLoader(false);
-    }
-  });
-}
+  const texto = encodeURIComponent(lineas.join("\n"));
+  window.location.href = `https://wa.me/527225600905?text=${texto}`;
+});
