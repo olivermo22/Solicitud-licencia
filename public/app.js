@@ -1,8 +1,5 @@
 // app.js - Frontend principal del formulario de Gestoría Virtual
 
-// ===============================
-// CONFIGURACIÓN
-// ===============================
 const ADMIN_WHATSAPP_NUMBER = "527225600905"; // 52 + 7225600905
 
 // ===============================
@@ -12,12 +9,34 @@ const btnAdmin = document.getElementById("btnAdmin");
 const form = document.getElementById("solicitudForm");
 const globalLoader = document.getElementById("globalLoader");
 
-// Datos del formulario
+// Datos personales
 const inputNombre = document.getElementById("nombre");
+const inputApellidos = document.getElementById("apellidos");
 const inputCurp = document.getElementById("curp");
 const inputTelefono = document.getElementById("telefono");
 const inputEmail = document.getElementById("email");
+const inputTipoLicencia = document.getElementById("tipoLicencia");
+const inputVigencia = document.getElementById("vigencia");
+const inputDomicilioGuerrero = document.getElementById("domicilioGuerrero");
+const inputAlergias = document.getElementById("alergias");
+const inputTipoSangre = document.getElementById("tipoSangre");
+const inputEmergenciaNombre = document.getElementById("emergenciaNombre");
+const inputEmergenciaTelefono = document.getElementById("emergenciaTelefono");
 const inputComentarios = document.getElementById("comentarios");
+
+// Datos de envío
+const inputEnvioNombreDestinatario = document.getElementById("envioNombreDestinatario");
+const inputEnvioTelefonoDestinatario = document.getElementById("envioTelefonoDestinatario");
+const inputEnvioCalle = document.getElementById("envioCalle");
+const inputEnvioNumero = document.getElementById("envioNumero");
+const inputEnvioColonia = document.getElementById("envioColonia");
+const inputEnvioCP = document.getElementById("envioCP");
+const inputEnvioCiudadEstado = document.getElementById("envioCiudadEstado");
+
+// Inputs ocultos para URLs
+const inputPersonaPhotoUrl = document.getElementById("personaPhotoUrl");
+const inputIdPhotoUrl = document.getElementById("idPhotoUrl");
+const inputFirmaUrl = document.getElementById("firmaUrl");
 
 // Foto persona
 const btnPersonaCamera = document.getElementById("btnPersonaCamera");
@@ -27,7 +46,6 @@ const fotoPersonaPreview = document.getElementById("fotoPersonaPreview");
 const fotoPersonaActions = document.getElementById("fotoPersonaActions");
 const btnPersonaUsar = document.getElementById("btnPersonaUsar");
 const btnPersonaCambiar = document.getElementById("btnPersonaCambiar");
-const inputPersonaPhotoUrl = document.getElementById("personaPhotoUrl");
 
 // Foto identificación
 const btnIdCamera = document.getElementById("btnIdCamera");
@@ -37,7 +55,6 @@ const fotoIdPreview = document.getElementById("fotoIdPreview");
 const fotoIdActions = document.getElementById("fotoIdActions");
 const btnIdUsar = document.getElementById("btnIdUsar");
 const btnIdCambiar = document.getElementById("btnIdCambiar");
-const inputIdPhotoUrl = document.getElementById("idPhotoUrl");
 
 // Firma
 const tabFirmaSubir = document.getElementById("tabFirmaSubir");
@@ -50,15 +67,11 @@ const firmaPreview = document.getElementById("firmaPreview");
 
 const signaturePad = document.getElementById("signaturePad");
 const btnLimpiarFirma = document.getElementById("btnLimpiarFirma");
-const btnConfirmarFirmaCanvas = document.getElementById(
-  "btnConfirmarFirmaCanvas"
-);
-
+const btnConfirmarFirmaCanvas = document.getElementById("btnConfirmarFirmaCanvas");
 const firmaActions = document.getElementById("firmaActions");
 const btnFirmaCambiar = document.getElementById("btnFirmaCambiar");
-const inputFirmaUrl = document.getElementById("firmaUrl");
 
-// Cámara (modal)
+// Cámara
 const cameraModal = document.getElementById("cameraModal");
 const cameraVideo = document.getElementById("cameraVideo");
 const cameraSilhouette = document.getElementById("cameraSilhouette");
@@ -122,7 +135,7 @@ function resetPreview(container, placeholderText) {
 }
 
 // ===============================
-// CÁMARA (MODAL)
+// CÁMARA
 // ===============================
 async function openCamera(
   callback,
@@ -130,7 +143,6 @@ async function openCamera(
 ) {
   cameraCallback = callback;
 
-  // Mostrar / ocultar silueta según origen
   if (cameraSilhouette) {
     cameraSilhouette.style.display = options.silhouette ? "block" : "none";
   }
@@ -196,7 +208,7 @@ if (closeCameraBtn) {
 }
 
 // ===============================
-// SUBIDA GENÉRICA DE IMÁGENES
+// SUBIDA DE IMÁGENES
 // ===============================
 async function uploadImage(fileOrBlob, type) {
   const formData = new FormData();
@@ -524,13 +536,67 @@ if (form) {
     e.preventDefault();
 
     const nombre = inputNombre.value.trim();
+    const apellidos = inputApellidos.value.trim();
     const curp = inputCurp.value.trim();
     const telefono = inputTelefono.value.trim();
     const email = inputEmail.value.trim();
+    const tipoLicencia = inputTipoLicencia.value;
+    const vigencia = inputVigencia.value;
+    const domicilioAceptado = inputDomicilioGuerrero.checked;
+    const alergias = inputAlergias.value.trim();
+    const tipoSangre = inputTipoSangre.value;
+    const emergenciaNombre = inputEmergenciaNombre.value.trim();
+    const emergenciaTelefono = inputEmergenciaTelefono.value.trim();
     const comentarios = inputComentarios.value.trim();
 
-    if (!nombre || !curp || !telefono) {
-      alert("Por favor, llena al menos Nombre, CURP y Teléfono.");
+    const envioNombreDestinatario = inputEnvioNombreDestinatario.value.trim();
+    const envioTelefonoDestinatario = inputEnvioTelefonoDestinatario.value.trim();
+    const envioCalle = inputEnvioCalle.value.trim();
+    const envioNumero = inputEnvioNumero.value.trim();
+    const envioColonia = inputEnvioColonia.value.trim();
+    const envioCP = inputEnvioCP.value.trim();
+    const envioCiudadEstado = inputEnvioCiudadEstado.value.trim();
+
+    if (!nombre || !apellidos || !curp || !telefono) {
+      alert("Por favor, llena al menos Nombre(s), Apellidos, CURP y Teléfono.");
+      return;
+    }
+
+    if (!tipoLicencia) {
+      alert("Selecciona el tipo de licencia.");
+      return;
+    }
+
+    if (!vigencia) {
+      alert("Selecciona la vigencia de la licencia.");
+      return;
+    }
+
+    if (!domicilioAceptado) {
+      alert("Debes aceptar que la licencia lleve domicilio del estado de Guerrero.");
+      return;
+    }
+
+    if (!tipoSangre) {
+      alert("Selecciona el tipo de sangre.");
+      return;
+    }
+
+    if (!emergenciaNombre || !emergenciaTelefono) {
+      alert("Completa los datos de contacto de emergencia.");
+      return;
+    }
+
+    if (
+      !envioNombreDestinatario ||
+      !envioTelefonoDestinatario ||
+      !envioCalle ||
+      !envioNumero ||
+      !envioColonia ||
+      !envioCP ||
+      !envioCiudadEstado
+    ) {
+      alert("Completa todos los datos de envío.");
       return;
     }
 
@@ -549,10 +615,25 @@ if (form) {
 
     const payload = {
       nombre,
+      apellidos,
       curp,
       telefono,
       email,
+      tipoLicencia,
+      vigencia,
+      domicilioAceptado,
+      alergias,
+      tipoSangre,
+      emergenciaNombre,
+      emergenciaTelefono,
       comentarios,
+      envioNombreDestinatario,
+      envioTelefonoDestinatario,
+      envioCalle,
+      envioNumero,
+      envioColonia,
+      envioCP,
+      envioCiudadEstado,
       personaPhotoUrl: personaUrl,
       idPhotoUrl: idUrl,
       firmaUrl,
@@ -561,7 +642,7 @@ if (form) {
     try {
       showGlobalLoader(true);
 
-      // 1) Guardar en el servidor para el panel admin
+      // 1) Guardar en el servidor para el panel admin (y obtener # de respuesta)
       const res = await fetch("/api/forms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -572,25 +653,52 @@ if (form) {
         throw new Error("Error guardando el formulario en el servidor");
       }
 
-      // 2) Construir mensaje de WhatsApp
-      const baseUrl = window.location.origin;
-      const lines = [
-        "NUEVA SOLICITUD DE TRÁMITE",
-        "",
-        `Nombre: ${nombre}`,
-        `CURP: ${curp}`,
-        `Teléfono: ${telefono}`,
-        email ? `Email: ${email}` : "",
-        comentarios ? `Comentarios: ${comentarios}` : "",
-        "",
-        `Foto persona: ${baseUrl}${personaUrl}`,
-        `Identificación: ${baseUrl}${idUrl}`,
-        `Firma: ${baseUrl}${firmaUrl}`,
-        "",
-        "Enviado desde el formulario web.",
-      ].filter(Boolean);
+      const data = await res.json();
+      const folio = data?.form?.responseNumber || data?.form?.id || "----";
 
-      const text = encodeURIComponent(lines.join("\n"));
+      // 2) Construir mensaje de WhatsApp
+      const licenciaMap = {
+        A: "AUTOMOVILISTA - A",
+        C: "CHOFER - C",
+        M: "MOTOCICLISTA - M",
+      };
+      const vigenciaMap = {
+        "3": "3 AÑOS $650",
+        "5": "5 AÑOS $700",
+      };
+
+      const licenciaTexto = licenciaMap[tipoLicencia] || tipoLicencia;
+      const vigenciaTexto = vigenciaMap[vigencia] || vigencia;
+      const domicilioTexto = domicilioAceptado ? "SI" : "NO";
+      const nombreCompleto = `${nombre} ${apellidos}`.trim();
+
+      const lineas = [
+        "SOLICITUD LICENCIA DE CONDUCIR",
+        `Respuesta #${folio}`,
+        "",
+        `NUM TELEFONO : ${telefono}`,
+        `TIPO DE LICENCIA : ${licenciaTexto}`,
+        `VALIDA POR : ${vigenciaTexto}`,
+        `NOMBRE COMPLETO : ${nombreCompleto}`,
+        `CURP : ${curp}`,
+        `DOMICILIO DE GUERRERO ACEPTADO : ${domicilioTexto}`,
+        `ALERGIAS/RESTRICCIONES : ${alergias || "Ninguna"}`,
+        `TIPO DE SANGRE : ${tipoSangre}`,
+        `CONTACTO DE EMERGENCIA : ${emergenciaNombre} ${emergenciaTelefono}`,
+        "",
+        "DATOS DE ENVÍO",
+        `NOMBRE DESTINATARIO : ${envioNombreDestinatario}`,
+        `TELÉFONO DESTINATARIO : ${envioTelefonoDestinatario}`,
+        `CALLE : ${envioCalle}`,
+        `NÚMERO : ${envioNumero}`,
+        `COLONIA : ${envioColonia}`,
+        `CP : ${envioCP}`,
+        `CIUDAD Y ESTADO : ${envioCiudadEstado}`,
+        "",
+        "Tu solicitud será asignada al número 7225600905 para continuar el trámite.",
+      ];
+
+      const text = encodeURIComponent(lineas.join("\n"));
       const waUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${text}`;
       window.location.href = waUrl;
     } catch (err) {

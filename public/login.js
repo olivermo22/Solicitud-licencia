@@ -1,5 +1,4 @@
 // login.js
-
 const loginForm = document.getElementById("loginForm");
 const loginError = document.getElementById("loginError");
 const btnVolverForm = document.getElementById("btnVolverForm");
