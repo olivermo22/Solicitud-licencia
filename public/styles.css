@@ -414,3 +414,49 @@ button {
     padding: 26px 24px 30px;
   }
 }
+/* ========================= */
+/* CÁMARA CON SILUETA        */
+/* ========================= */
+
+.camera-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.camera-box {
+  width: 90%;
+  max-width: 360px;
+  background: #111;
+  border-radius: 16px;
+  padding: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+#cameraVideo {
+  width: 100%;
+  border-radius: 12px;
+  background: black;
+}
+
+.silhouette-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 85%; /* 10% más pequeña */
+  transform: translate(-50%, -50%);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.camera-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}

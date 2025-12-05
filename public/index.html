@@ -177,6 +177,22 @@
     <span>Procesando imagen, por favor espera...</span>
   </div>
 
+  <!-- MODAL DE CÁMARA PARA FOTO DE PERSONA -->
+<div id="cameraModal" class="camera-modal" style="display:none;">
+  <div class="camera-box">
+    <video id="cameraVideo" autoplay playsinline></video>
+
+    <!-- SILUETA -->
+    <img id="cameraSilhouette" src="/silueta.png" class="silhouette-overlay">
+
+    <div class="camera-controls">
+      <button id="takePhotoBtn" class="btn-primary full">Tomar foto</button>
+      <button id="closeCameraBtn" class="btn-secondary full">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
   <script src="/app.js"></script>
 </body>
 </html>

@@ -24,6 +24,15 @@ const inputPersonaPhotoUrl = document.getElementById("personaPhotoUrl");
 const inputIdPhotoUrl = document.getElementById("idPhotoUrl");
 const inputFirmaUrl = document.getElementById("firmaUrl");
 
+// Cámara
+const cameraModal = document.getElementById("cameraModal");
+const cameraVideo = document.getElementById("cameraVideo");
+const takePhotoBtn = document.getElementById("takePhotoBtn");
+const closeCameraBtn = document.getElementById("closeCameraBtn");
+
+let cameraStream = null;
+let cameraCallback = null;
+
 // Foto persona
 const fotoPersonaInput = document.getElementById("fotoPersonaInput");
 const fotoPersonaPreview = document.getElementById("fotoPersonaPreview");
@@ -104,42 +113,83 @@ async function uploadImage(fileOrBlob, type) {
   return data.url;
 }
 
-// ====== FOTO PERSONA ======
+async function openCamera(callback) {
+  cameraCallback = callback;
+
+  cameraModal.style.display = "flex";
+
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+    cameraVideo.srcObject = cameraStream;
+  } catch (err) {
+    alert("No se pudo acceder a la cámara.");
+    closeCamera();
+  }
+}
+
+function closeCamera() {
+  cameraModal.style.display = "none";
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+}
+
+takePhotoBtn.onclick = () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = cameraVideo.videoWidth;
+  canvas.height = cameraVideo.videoHeight;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+
+  canvas.toBlob((blob) => {
+    if (cameraCallback) cameraCallback(blob);
+    closeCamera();
+  }, "image/jpeg", 0.95);
+};
+
+closeCameraBtn.onclick = closeCamera;
+
+
+// ====== FOTO PERSONA (NUEVO: CÁMARA CON SILUETA) ======
 if (fotoPersonaInput) {
-  fotoPersonaInput.addEventListener("change", async () => {
-    const file = fotoPersonaInput.files[0];
-    if (!file) return;
+  fotoPersonaInput.addEventListener("click", (e) => {
+    e.preventDefault();
 
-    try {
-      setPreviewLoading(fotoPersonaPreview);
-      showGlobalLoader(true);
+    // Abrir cámara
+    openCamera(async (blob) => {
+      try {
+        setPreviewLoading(fotoPersonaPreview);
+        showGlobalLoader(true);
 
-      const url = await uploadImage(file, "persona");
+        const url = await uploadImage(blob, "persona");
 
-      setPreviewImage(fotoPersonaPreview, url, "Foto de la persona procesada");
-      fotoPersonaActions.style.display = "flex";
-
-      btnPersonaUsar.onclick = () => {
         personaUrl = url;
         inputPersonaPhotoUrl.value = url;
-        alert("Foto de la persona confirmada.");
-      };
 
-      btnPersonaCambiar.onclick = () => {
-        personaUrl = "";
-        inputPersonaPhotoUrl.value = "";
-        fotoPersonaInput.value = "";
+        setPreviewImage(fotoPersonaPreview, url, "Foto de persona");
+        fotoPersonaActions.style.display = "flex";
+
+        btnPersonaUsar.onclick = () => {
+          alert("Foto de la persona confirmada.");
+        };
+
+        btnPersonaCambiar.onclick = () => {
+          personaUrl = "";
+          inputPersonaPhotoUrl.value = "";
+          resetPreview(fotoPersonaPreview, "Aún no hay foto");
+          fotoPersonaActions.style.display = "none";
+        };
+
+      } catch (err) {
+        console.error(err);
+        alert("Error procesando la foto.");
         resetPreview(fotoPersonaPreview, "Aún no hay foto");
-        fotoPersonaActions.style.display = "none";
-      };
-    } catch (err) {
-      console.error(err);
-      alert("Ocurrió un error procesando la foto de la persona.");
-      resetPreview(fotoPersonaPreview, "Aún no hay foto");
-      fotoPersonaActions.style.display = "none";
-    } finally {
-      showGlobalLoader(false);
-    }
+      } finally {
+        showGlobalLoader(false);
+      }
+    });
   });
 }
 
