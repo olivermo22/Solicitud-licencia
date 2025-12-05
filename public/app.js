@@ -150,29 +150,32 @@ function closeCamera() {
 }
 
 if (takePhotoBtn) {
-  takePhotoBtn.addEventListener("click", () => {
-    if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
-      alert("La cámara aún no está lista, intenta de nuevo.");
-      return;
-    }
-    const canvas = document.createElement("canvas");
-    canvas.width = cameraVideo.videoWidth;
-    canvas.height = cameraVideo.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+  takePhotoBtn.addEventListener("click", async () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = cameraVideo.videoWidth;
+  canvas.height = cameraVideo.videoHeight;
 
-    canvas.toBlob(
-      (blob) => {
-        if (cameraCallback && blob) {
-          cameraCallback(blob);
-        }
-      },
-      "image/jpeg",
-      0.95
-    );
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
 
-    closeCamera();
-  });
+  // Convertir a blob usando Promise
+  const blob = await new Promise((resolve) =>
+    canvas.toBlob(resolve, "image/jpeg", 0.95)
+  );
+
+  if (!blob) {
+    alert("No se pudo obtener la foto, intenta nuevamente.");
+    return;
+  }
+
+  // Enviar la foto a quien la solicitó
+  if (cameraCallback) {
+    await cameraCallback(blob);
+  }
+
+  closeCamera();
+});
+
 }
 
 if (closeCameraBtn) {
