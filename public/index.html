@@ -42,6 +42,11 @@
         </div>
 
         <div class="field-group">
+          <label for="email">Correo electrónico (opcional)</label>
+          <input id="email" type="email" />
+        </div>
+
+        <div class="field-group">
           <label for="tipoLicencia">Tipo de licencia *</label>
           <select id="tipoLicencia" required>
             <option value="">Selecciona una opción</option>
@@ -61,19 +66,17 @@
         </div>
 
         <div class="field-group">
-  <label>
-    ¿Aceptas que la licencia lleve domicilio del estado de Guerrero?
-    <br />
-    <small style="color:#6b7280">
-      Como la licencia se tramita en Guerrero, se pide que salga con un domicilio de aquí.  
-      En caso de no tener domicilio de Guerrero, la licencia saldrá con el domicilio del ayuntamiento donde se realiza el trámite.
-    </small>
-  </label>
-  <label class="inline-checkbox">
-    <input type="checkbox" id="domicilioGuerrero" />
-    <span>Confirmo que acepto.</span>
-  </label>
-</div>
+          <label>¿Aceptas que la licencia lleve domicilio del estado de Guerrero? *</label>
+          <label class="inline-checkbox">
+            <input type="checkbox" id="domicilioGuerrero" />
+            <span>Sí, confirmo que acepto que la licencia lleve domicilio del estado de Guerrero.</span>
+          </label>
+        </div>
+
+        <div class="field-group">
+          <label for="alergias">Alergias / Restricciones</label>
+          <input id="alergias" type="text" placeholder="Ej. Ninguna" />
+        </div>
 
         <div class="field-group">
           <label for="tipoSangre">Tipo de sangre *</label>
@@ -99,6 +102,11 @@
         <div class="field-group">
           <label for="emergenciaTelefono">Teléfono contacto de emergencia *</label>
           <input id="emergenciaTelefono" type="tel" required />
+        </div>
+
+        <div class="field-group">
+          <label for="comentarios">Comentarios adicionales (opcional)</label>
+          <textarea id="comentarios" rows="3"></textarea>
         </div>
 
         <hr class="divider" />
