@@ -36,7 +36,7 @@ if (!fs.existsSync(FORMS_FILE)) {
 if (!fs.existsSync(COUNTER_FILE)) {
   fs.writeFileSync(
     COUNTER_FILE,
-    JSON.stringify({ last: 34687 }, null, 2),
+    JSON.stringify({ last: 9999 }, null, 2),
     "utf8"
   );
 }
