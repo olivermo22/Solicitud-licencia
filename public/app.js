@@ -148,14 +148,71 @@ async function openCamera(
   cameraModal.style.display = "flex";
 
   try {
-    const constraints = {
-      video: {
-        facingMode: options.rearCamera ? { ideal: "environment" } : "user",
-      },
-      audio: false,
-    };
+    async function getBestRearCamera() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+
+  // filtros para cámaras con etiqueta "back" o tipo video
+  const videoDevices = devices.filter(d =>
+    d.kind === "videoinput" &&
+    (d.label.toLowerCase().includes("back") ||
+     d.label.toLowerCase().includes("rear") ||
+     d.label.toLowerCase().includes("environment"))
+  );
+
+  // si no encuentra, toma cualquier cámara trasera disponible
+  if (videoDevices.length === 0) {
+    return null;
+  }
+
+  // Elegir la mejor disponible (normalmente la primera es la principal)
+  return videoDevices[0].deviceId;
+}
+
+// ===============================
+// NUEVA VERSIÓN DE OPEN CAMERA
+// ===============================
+async function openCamera(callback, options = { silhouette: true, rearCamera: false }) {
+  cameraCallback = callback;
+
+  if (cameraSilhouette) {
+    cameraSilhouette.style.display = options.silhouette ? "block" : "none";
+  }
+
+  cameraModal.style.display = "flex";
+
+  try {
+    let constraints;
+
+    if (options.rearCamera) {
+      // Buscar la cámara trasera principal
+      const rearDeviceId = await getBestRearCamera();
+
+      if (rearDeviceId) {
+        constraints = {
+          video: {
+            deviceId: { exact: rearDeviceId },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        };
+      } else {
+        // fallback si no se encuentra
+        constraints = { video: { facingMode: "environment" } };
+      }
+    } else {
+      constraints = { video: { facingMode: "user" }, audio: false };
+    }
 
     cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+    cameraVideo.srcObject = cameraStream;
+  } catch (err) {
+    console.error("Error accediendo a la cámara:", err);
+    alert("No se pudo acceder a la cámara. Revisa permisos.");
+    closeCamera();
+  }
+}
+
     cameraVideo.srcObject = cameraStream;
   } catch (err) {
     console.error("Error accediendo a la cámara:", err);
