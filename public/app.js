@@ -139,18 +139,47 @@ function resetPreview(container, placeholderText) {
 // Detectar la mejor cámara trasera REAL del dispositivo
 async function getBestRearCamera() {
   const devices = await navigator.mediaDevices.enumerateDevices();
+  
+  // Obtener todas las cámaras de video
+  const videoDevices = devices.filter(d => d.kind === "videoinput");
 
-  const videoDevices = devices.filter(d =>
-    d.kind === "videoinput" &&
-    (d.label.toLowerCase().includes("back") ||
-     d.label.toLowerCase().includes("rear") ||
-     d.label.toLowerCase().includes("environment"))
-  );
-
+  // Si no hay cámaras, retornar null
   if (videoDevices.length === 0) return null;
 
-  return videoDevices[0].deviceId; // la principal
+  let bestDeviceId = null;
+  let bestResolution = 0;
+
+  // Probar cada cámara trasera (Chrome NO dice rear, así que probamos todas)
+  for (const device of videoDevices) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: { exact: device.deviceId } },
+      });
+
+      const track = stream.getVideoTracks()[0];
+      const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+
+      const width = capabilities.width?.max || 0;
+      const height = capabilities.height?.max || 0;
+      const megapixels = width * height;
+
+      // Cerrar stream
+      track.stop();
+
+      // Elegimos la cámara de mayor resolución
+      if (megapixels > bestResolution) {
+        bestResolution = megapixels;
+        bestDeviceId = device.deviceId;
+      }
+    } catch (err) {
+      // Algunas cámaras fallan al pedir stream → las ignoramos
+      continue;
+    }
+  }
+
+  return bestDeviceId;
 }
+
 
 // Abrir cámara (frontal o trasera)
 async function openCamera(callback, options = { silhouette: true, rearCamera: false }) {
