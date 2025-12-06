@@ -148,12 +148,43 @@ async function openCamera(
   cameraModal.style.display = "flex";
 
   try {
-    const constraints = {
-      video: {
-        facingMode: options.rearCamera ? { ideal: "environment" } : "user",
-      },
-      audio: false,
-    };
+    let constraints = {};
+
+if (options.rearCamera) {
+  constraints = {
+    video: {
+      facingMode: { exact: "environment" }  // fuerza la cámara trasera real
+    },
+    audio: false
+  };
+} else {
+  constraints = {
+    video: {
+      facingMode: "user"
+    },
+    audio: false
+  };
+}
+
+try {
+  cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+  cameraVideo.srcObject = cameraStream;
+} catch (err) {
+  // Fallback si "exact" falla en algunos teléfonos
+  console.warn("Lente principal exact falló, usando environment ideal…", err);
+
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: false
+    });
+    cameraVideo.srcObject = cameraStream;
+  } catch (err2) {
+    alert("No se pudo abrir la cámara trasera.");
+    closeCamera();
+  }
+}
+
 
     cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
     cameraVideo.srcObject = cameraStream;
