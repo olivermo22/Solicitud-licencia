@@ -133,12 +133,27 @@ function resetPreview(container, placeholderText) {
 }
 
 // ===============================
-// CÁMARA
+// CÁMARA – SELECCIONAR MEJOR LENTE
 // ===============================
-async function openCamera(
-  callback,
-  options = { silhouette: true, rearCamera: false }
-) {
+
+// Detectar la mejor cámara trasera REAL del dispositivo
+async function getBestRearCamera() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+
+  const videoDevices = devices.filter(d =>
+    d.kind === "videoinput" &&
+    (d.label.toLowerCase().includes("back") ||
+     d.label.toLowerCase().includes("rear") ||
+     d.label.toLowerCase().includes("environment"))
+  );
+
+  if (videoDevices.length === 0) return null;
+
+  return videoDevices[0].deviceId; // la principal
+}
+
+// Abrir cámara (frontal o trasera)
+async function openCamera(callback, options = { silhouette: true, rearCamera: false }) {
   cameraCallback = callback;
 
   if (cameraSilhouette) {
@@ -148,62 +163,80 @@ async function openCamera(
   cameraModal.style.display = "flex";
 
   try {
-    const constraints = {
-      video: {
-        facingMode: options.rearCamera ? { ideal: "environment" } : "user",
-      },
-      audio: false,
-    };
+    let constraints;
+
+    if (options.rearCamera) {
+      const rearDeviceId = await getBestRearCamera();
+
+      if (rearDeviceId) {
+        constraints = {
+          video: {
+            deviceId: { exact: rearDeviceId },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        };
+      } else {
+        constraints = {
+          video: { facingMode: "environment" },
+          audio: false
+        };
+      }
+    } else {
+      constraints = {
+        video: { facingMode: "user" },
+        audio: false
+      };
+    }
 
     cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
     cameraVideo.srcObject = cameraStream;
+
   } catch (err) {
     console.error("Error accediendo a la cámara:", err);
-    alert("No se pudo acceder a la cámara. Revisa los permisos.");
+    alert("No se pudo acceder a la cámara. Revisa permisos.");
     closeCamera();
   }
 }
 
 function closeCamera() {
   cameraModal.style.display = "none";
+
   if (cameraStream) {
-    cameraStream.getTracks().forEach((t) => t.stop());
+    cameraStream.getTracks().forEach(t => t.stop());
     cameraStream = null;
   }
+
   cameraCallback = null;
 }
 
-if (takePhotoBtn) {
-  takePhotoBtn.addEventListener("click", async () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = cameraVideo.videoWidth;
-    canvas.height = cameraVideo.videoHeight;
+takePhotoBtn.addEventListener("click", async () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = cameraVideo.videoWidth;
+  canvas.height = cameraVideo.videoHeight;
 
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
 
-    const blob = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", 0.95)
-    );
+  const blob = await new Promise(resolve =>
+    canvas.toBlob(resolve, "image/jpeg", 0.95)
+  );
 
-    if (!blob) {
-      alert("No se pudo obtener la foto, intenta nuevamente.");
-      return;
-    }
+  if (!blob) {
+    alert("No se pudo obtener la foto.");
+    return;
+  }
 
-    if (cameraCallback) {
-      await cameraCallback(blob);
-    }
+  if (cameraCallback) {
+    await cameraCallback(blob);
+  }
 
-    closeCamera();
-  });
-}
+  closeCamera();
+});
 
-if (closeCameraBtn) {
-  closeCameraBtn.addEventListener("click", () => {
-    closeCamera();
-  });
-}
+closeCameraBtn.addEventListener("click", closeCamera);
+
 
 // ===============================
 // SUBIDA DE IMÁGENES
